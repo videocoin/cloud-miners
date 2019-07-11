@@ -6,6 +6,7 @@ import (
 
 	protoempty "github.com/gogo/protobuf/types"
 	"github.com/opentracing/opentracing-go"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
@@ -77,15 +78,18 @@ func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.Crea
 		return nil, err
 	}
 
-	miner, err := s.ds.Miners.Create(ctx, userId)
+	key := ksuid.New().String()
+	hash := GetMD5Hash(key)
+
+	miner, err := s.ds.Miners.Create(ctx, userId, hash)
 	if err != nil {
 		s.logger.Errorf("failed to create miner: %s", err)
 		return nil, rpc.ErrRpcInternal
 	}
 
 	return &v1.CreateResponse{
-		Id:      miner.Id,
-		KeyHash: GetMD5Hash(miner.Key),
+		Id:  miner.Id,
+		Key: key,
 	}, nil
 }
 
@@ -94,17 +98,16 @@ func (s *RPCServer) List(ctx context.Context, req *v1.ListRequest) (*v1.ListResp
 	defer span.Finish()
 
 	resp := &v1.ListResponse{Items: []*v1.Miner{}}
-	miners, err := s.ds.Miners.List(ctx, req.IsBusy)
+	miners, err := s.ds.Miners.List(ctx, req.Status)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, miner := range miners {
 		resp.Items = append(resp.Items, &v1.Miner{
-			Id:       miner.Id,
-			Hostname: miner.Hostname,
-			IsBusy:   miner.IsBusy,
-			CpuIdle:  miner.CpuIdle,
+			Id:      miner.Id,
+			Status:  miner.Status,
+			CpuIdle: miner.CpuIdle,
 		})
 	}
 
@@ -125,61 +128,47 @@ func (s *RPCServer) Get(ctx context.Context, req *v1.Request) (*v1.Response, err
 	}
 
 	resp.Id = miner.Id
-	resp.IsBusy = miner.IsBusy
-	resp.Hostname = miner.Hostname
+	resp.Status = miner.Status
 	resp.CpuIdle = miner.CpuIdle
 
 	return resp, nil
 }
 
-func (s *RPCServer) MarkAsBusy(ctx context.Context, req *v1.Request) (*v1.Response, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "MarkAsBusy")
+func (s *RPCServer) Validate(ctx context.Context, req *v1.Request) (*v1.Response, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "Validate")
 	defer span.Finish()
 
-	span.SetTag("id", req.Id)
+	span.SetTag("hash", req.Hash)
 
 	resp := &v1.Response{}
 
-	miner, err := s.ds.Miners.Get(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.ds.Miners.MarkAsBusy(ctx, miner)
+	miner, err := s.ds.Miners.GetByHash(ctx, req.Hash)
 	if err != nil {
 		return nil, err
 	}
 
 	resp.Id = miner.Id
-	resp.IsBusy = miner.IsBusy
-	resp.Hostname = miner.Hostname
-	resp.CpuIdle = miner.CpuIdle
+	resp.Status = miner.Status
 
 	return resp, nil
 }
 
-func (s *RPCServer) MarkAsIdle(ctx context.Context, req *v1.Request) (*v1.Response, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "MarkAsIdle")
+func (s *RPCServer) UpdateStatus(ctx context.Context, req *v1.Request) (*v1.Response, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateStatus")
 	defer span.Finish()
 
 	span.SetTag("id", req.Id)
+	span.SetTag("status", req.Status)
 
 	resp := &v1.Response{}
 
-	miner, err := s.ds.Miners.Get(ctx, req.Id)
+	err := s.ds.Miners.UpdateStatus(ctx, req.Id, req.Status)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.ds.Miners.MarkAsIdle(ctx, miner)
-	if err != nil {
-		return nil, err
-	}
-
-	resp.Id = miner.Id
-	resp.IsBusy = miner.IsBusy
-	resp.Hostname = miner.Hostname
-	resp.CpuIdle = miner.CpuIdle
+	resp.Id = req.Id
+	resp.Status = req.Status
 
 	return resp, nil
 }
