@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package cloud.api.miners.v1;
+
+import "miners/v1/miner.proto";
+import "github.com/videocoin/cloud-api/rpc/health.proto";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "v1";
+option (gogoproto.marshaler_all) = false;
+option (gogoproto.unmarshaler_all) = false;
+option (gogoproto.sizer_all) = false;
+option (gogoproto.goproto_registration) = true;
+option (gogoproto.messagename_all) = true;
+
+service MinersService {
+    rpc Health(google.protobuf.Empty) returns (cloud.api.rpc.HealthStatus) {
+        option (google.api.http) = {
+            get: "/healthz"
+        };
+    }
+
+    rpc Create(google.protobuf.Empty) returns (CreateResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/miners",
+            body: "*"
+        };
+    }
+    rpc Get(Request) returns (Response) {
+        option (google.api.http) = {
+            get: "/api/v1/miners/{id}"
+        };
+    }
+    rpc Validate(Request) returns (Response) {
+        option (google.api.http) = {
+            get: "/api/v1/miners/{hash}/validate"
+        };
+    }
+    rpc List(ListRequest) returns (ListResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/miners"
+        };
+    }
+    
+    rpc UpdateStatus(Request) returns (Response) {}
+}
+
+message CreateResponse {
+    string id = 1;
+    string key = 2;
+}
+
+message Request {
+    string id = 1;
+    string hash = 2;
+    MinerStatus status = 3;
+}
+
+message Response {
+    string id = 1;
+    MinerStatus status = 2;
+    int64 cpu_idle = 3;
+}
+
+message ListRequest {
+    MinerStatus status = 1;
+}
+
+message ListResponse {
+    repeated Miner items = 1;
+}

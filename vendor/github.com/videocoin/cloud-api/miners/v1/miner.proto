@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package cloud.api.miners.v1;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option go_package = "v1";
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.goproto_registration) = true;
+option (gogoproto.messagename_all) = true;
+
+enum MinerStatus {
+    option (gogoproto.goproto_enum_prefix) = false;
+    option (gogoproto.enum_customname) = "MinerStatus";
+
+    MINER_STATUS_OFFLINE = 0 [(gogoproto.enumvalue_customname) = "MinerStatusOffline"];
+    MINER_STATUS_IDLE = 1 [(gogoproto.enumvalue_customname) = "MinerStatusIdle"];
+    MINER_STATUS_BUSY = 2 [(gogoproto.enumvalue_customname) = "MinerStatusBusy"];
+}
+
+message Miner {
+    string id = 1 [
+        (gogoproto.moretags) = "gorm:\"type:varchar(36);primary_key\""
+    ];
+
+    string user_id = 2 [
+        (gogoproto.moretags) = "gorm:\"type:varchar(36);\""
+    ];
+    
+    string hash = 3;
+
+    MinerStatus status = 4;
+    int64 cpu_idle = 5;
+}
