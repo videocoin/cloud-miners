@@ -1,0 +1,32 @@
+replicasCount: 1
+maxUnavailableCount: 0
+
+image:
+  repository: gcr.io/videocoin-network/miners
+  tag: latest
+  pullPolicy: Always
+
+config: {}
+
+service:
+  type: ClusterIP
+  externalRpcPort: 5010
+  internalRpcPort: 5010
+
+autoscaler:
+  minCount: 1
+  maxCount: 10
+  targets:
+    targetCPUUtilizationPercentage: 70
+
+resources:
+  limits:
+   cpu: 200m
+   memory: 1000Mi
+  requests:
+   cpu: 200m
+   memory: 1000Mi
+
+secrets:
+  sentryDsn: ""
+
