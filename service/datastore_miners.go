@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
-	"github.com/videocoin_/common/uuid4"
 )
 
 var (
@@ -33,19 +33,15 @@ func (ds *MinerDatastore) Create(ctx context.Context, userId, hash string) (*v1.
 
 	tx := ds.db.Begin()
 
-	id, err := uuid4.New()
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
+	id := uuid.New()
 
 	miner := &v1.Miner{
-		Id:     id,
+		Id:     id.String(),
 		UserId: userId,
 		Hash:   hash,
 	}
 
-	err = tx.Create(miner).Error
+	err := tx.Create(miner).Error
 	if err != nil {
 		tx.Rollback()
 		return nil, err
@@ -144,6 +140,40 @@ func (ds *MinerDatastore) UpdateStatus(ctx context.Context, minerId string, stat
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to mark miner as busy: %s", err)
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
+func (ds *MinerDatastore) MarkAllAsOffline(ctx context.Context) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "MarkAllAsOffline")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	err := ds.db.Table("miners").Updates(map[string]interface{}{"is_online": false}).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
+func (ds *MinerDatastore) MarkAsOnline(ctx context.Context, ids []string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "MarAsOnline")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	err := ds.db.Table("miners").Where("id IN (?)", ids).Updates(map[string]interface{}{"is_online": true}).Error
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
 
 	tx.Commit()

@@ -33,4 +33,5 @@ message Miner {
 
     MinerStatus status = 4;
     int64 cpu_idle = 5;
+    bool is_online = 6;
 }

@@ -48,22 +48,39 @@ func (ds *DataSyncer) Start() error {
 				ds.logger.Errorf("failed to get cpu idle group by host: %s", err)
 				continue
 			}
-			for k, v := range data {
-				id := GetMD5Hash(k)
-				ctx := context.Background()
-				miner, err := ds.ds.Miners.Get(ctx, id)
 
-				if err != nil {
-					ds.logger.Errorf("failed to create miner: %s", err)
-				} else {
-					miner.CpuIdle = v
-					err = ds.ds.Miners.UpdateCPUIdle(ctx, miner)
+			ctx := context.Background()
+
+			if len(data) > 0 {
+				ids := []string{}
+				for k, v := range data {
+					miner, err := ds.ds.Miners.GetByHash(ctx, k)
 					if err != nil {
-						ds.logger.Error(err)
+						ds.logger.Errorf("failed to get miner: %s", err)
+					} else {
+						ids = append(ids, miner.Id)
+
+						miner.CpuIdle = v
+						err = ds.ds.Miners.UpdateCPUIdle(ctx, miner)
+						if err != nil {
+							ds.logger.Error(err)
+							continue
+						}
 					}
 				}
 
-				continue
+				ds.ds.Miners.MarkAllAsOffline(ctx)
+				err := ds.ds.Miners.MarkAsOnline(ctx, ids)
+				if err != nil {
+					ds.logger.Errorf("failed to mark as online: %s", err)
+					continue
+				}
+			} else {
+				err := ds.ds.Miners.MarkAllAsOffline(ctx)
+				if err != nil {
+					ds.logger.Errorf("failed to mark all as offline: %s", err)
+					continue
+				}
 			}
 		}
 	}
