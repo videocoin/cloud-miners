@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -54,13 +53,13 @@ func (ds *DataSyncer) Start() error {
 			if len(data) > 0 {
 				ids := []string{}
 				for k, v := range data {
-					miner, err := ds.ds.Miners.GetByHash(ctx, k)
+					miner, err := ds.ds.Miners.Get(ctx, k)
 					if err != nil {
 						ds.logger.Errorf("failed to get miner: %s", err)
 					} else {
-						ids = append(ids, miner.Id)
+						ids = append(ids, miner.ID)
 
-						miner.CpuIdle = v
+						miner.CPUIdle = v
 						err = ds.ds.Miners.UpdateCPUIdle(ctx, miner)
 						if err != nil {
 							ds.logger.Error(err)
@@ -69,11 +68,13 @@ func (ds *DataSyncer) Start() error {
 					}
 				}
 
-				ds.ds.Miners.MarkAllAsOffline(ctx)
-				err := ds.ds.Miners.MarkAsOnline(ctx, ids)
-				if err != nil {
-					ds.logger.Errorf("failed to mark as online: %s", err)
-					continue
+				if len(ids) > 0 {
+					ds.ds.Miners.MarkAllAsOffline(ctx)
+					err := ds.ds.Miners.MarkAsOnline(ctx, ids)
+					if err != nil {
+						ds.logger.Errorf("failed to mark as online: %s", err)
+						continue
+					}
 				}
 			} else {
 				err := ds.ds.Miners.MarkAllAsOffline(ctx)
@@ -89,13 +90,13 @@ func (ds *DataSyncer) Start() error {
 }
 
 func (ds *DataSyncer) Stop() error {
-	fmt.Println("ticker stop")
 	ds.ticker.Stop()
 	return nil
 }
 
 func (ds *DataSyncer) GetCPUIdleGroupByHost() (map[string]int64, error) {
-	datapoints, err := ds.cli.QueryMultiSince([]string{"cpu-total.*.miners.agents.cpu.usage_idle"}, 10*time.Second)
+	tenSecs := 30 * time.Second
+	datapoints, err := ds.cli.QueryMultiSince([]string{"cpu-total.*.miners.agents.cpu.usage_idle"}, tenSecs)
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +112,11 @@ func (ds *DataSyncer) GetCPUIdleGroupByHost() (map[string]int64, error) {
 		}
 
 		for _, point := range points {
-			if point.Value != nil {
-				data[host] = *point.Value
+			ago := time.Now().Add(-tenSecs)
+			if point.Time.After(ago) {
+				if point.Value != nil && !point.Time.IsZero() {
+					data[host] = *point.Value
+				}
 			}
 		}
 	}

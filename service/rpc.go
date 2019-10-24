@@ -4,9 +4,9 @@ import (
 	"context"
 	"net"
 
+	"github.com/AlekSi/pointer"
 	protoempty "github.com/gogo/protobuf/types"
 	"github.com/opentracing/opentracing-go"
-	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
@@ -68,7 +68,7 @@ func (s *RPCServer) Health(ctx context.Context, req *protoempty.Empty) (*rpc.Hea
 	return &rpc.HealthStatus{Status: "OK"}, nil
 }
 
-func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.CreateResponse, error) {
+func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Create")
 	defer span.Finish()
 
@@ -78,97 +78,60 @@ func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.Crea
 		return nil, err
 	}
 
-	key := ksuid.New().String()
-	hash := GetMD5Hash(key)
-
-	miner, err := s.ds.Miners.Create(ctx, userId, hash)
+	miner, err := s.ds.Miners.Create(ctx, userId)
 	if err != nil {
 		s.logger.Errorf("failed to create miner: %s", err)
 		return nil, rpc.ErrRpcInternal
 	}
 
-	return &v1.CreateResponse{
-		Id:  miner.Id,
-		Key: key,
+	return &v1.MinerResponse{
+		Id:     miner.ID,
+		Status: miner.Status,
 	}, nil
 }
 
-func (s *RPCServer) List(ctx context.Context, req *v1.ListRequest) (*v1.ListResponse, error) {
+func (s *RPCServer) List(ctx context.Context, req *v1.MinerRequest) (*v1.MinerListResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "List")
 	defer span.Finish()
 
-	resp := &v1.ListResponse{Items: []*v1.Miner{}}
-	miners, err := s.ds.Miners.List(ctx, req.Status)
+	userID, _, err := s.authenticate(ctx)
+	if err != nil {
+		s.logger.Error(err)
+		return nil, err
+	}
+
+	resp := &v1.MinerListResponse{Items: []*v1.MinerResponse{}}
+
+	miners, err := s.ds.Miners.List(ctx, pointer.ToString(userID))
 	if err != nil {
 		return nil, err
 	}
 
 	for _, miner := range miners {
-		resp.Items = append(resp.Items, &v1.Miner{
-			Id:      miner.Id,
-			Status:  miner.Status,
-			CpuIdle: miner.CpuIdle,
+		resp.Items = append(resp.Items, &v1.MinerResponse{
+			Id:     miner.ID,
+			Status: miner.Status,
 		})
 	}
 
 	return resp, nil
 }
 
-func (s *RPCServer) Get(ctx context.Context, req *v1.Request) (*v1.Response, error) {
+func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Get")
 	defer span.Finish()
 
 	span.SetTag("id", req.Id)
 
-	resp := &v1.Response{}
+	resp := &v1.MinerResponse{}
 
 	miner, err := s.ds.Miners.Get(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Id = miner.Id
+	resp.Id = miner.ID
 	resp.Status = miner.Status
-	resp.CpuIdle = miner.CpuIdle
-
-	return resp, nil
-}
-
-func (s *RPCServer) Validate(ctx context.Context, req *v1.Request) (*v1.Response, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "Validate")
-	defer span.Finish()
-
-	span.SetTag("hash", req.Hash)
-
-	resp := &v1.Response{}
-
-	miner, err := s.ds.Miners.GetByHash(ctx, req.Hash)
-	if err != nil {
-		return nil, err
-	}
-
-	resp.Id = miner.Id
-	resp.Status = miner.Status
-
-	return resp, nil
-}
-
-func (s *RPCServer) UpdateStatus(ctx context.Context, req *v1.Request) (*v1.Response, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateStatus")
-	defer span.Finish()
-
-	span.SetTag("id", req.Id)
-	span.SetTag("status", req.Status)
-
-	resp := &v1.Response{}
-
-	err := s.ds.Miners.UpdateStatus(ctx, req.Id, req.Status)
-	if err != nil {
-		return nil, err
-	}
-
-	resp.Id = req.Id
-	resp.Status = req.Status
 
 	return resp, nil
 }

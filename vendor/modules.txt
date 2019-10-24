@@ -1,3 +1,5 @@
+# github.com/AlekSi/pointer v1.1.0
+github.com/AlekSi/pointer
 # github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a
 github.com/JensRantil/graphite-client
 # github.com/beorn7/perks v1.0.0
@@ -12,27 +14,25 @@ github.com/evalphobia/logrus_sentry
 github.com/getsentry/raven-go
 # github.com/go-sql-driver/mysql v1.4.1
 github.com/go-sql-driver/mysql
-# github.com/gogo/googleapis v1.2.0
+# github.com/gogo/googleapis v1.3.0
 github.com/gogo/googleapis/google/api
-# github.com/gogo/protobuf v1.2.1
+# github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/types
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/protobuf v1.3.2
+github.com/golang/protobuf/descriptor
 github.com/golang/protobuf/proto
-github.com/golang/protobuf/ptypes/wrappers
 github.com/golang/protobuf/protoc-gen-go/descriptor
+github.com/golang/protobuf/ptypes/wrappers
 github.com/golang/protobuf/jsonpb
-github.com/golang/protobuf/protoc-gen-go/generator
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/struct
-github.com/golang/protobuf/protoc-gen-go/generator/internal/remap
-github.com/golang/protobuf/protoc-gen-go/plugin
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
 # github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
@@ -50,7 +50,7 @@ github.com/grpc-ecosystem/go-grpc-middleware/tags/logrus
 github.com/grpc-ecosystem/go-grpc-middleware/util/backoffutils
 # github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 github.com/grpc-ecosystem/go-grpc-prometheus
-# github.com/grpc-ecosystem/grpc-gateway v1.9.4
+# github.com/grpc-ecosystem/grpc-gateway v1.11.3
 github.com/grpc-ecosystem/grpc-gateway/runtime
 github.com/grpc-ecosystem/grpc-gateway/utilities
 github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options
@@ -68,8 +68,8 @@ github.com/konsorten/go-windows-terminal-sequences
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/opentracing/opentracing-go v1.1.0
 github.com/opentracing/opentracing-go
-github.com/opentracing/opentracing-go/log
 github.com/opentracing/opentracing-go/ext
+github.com/opentracing/opentracing-go/log
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/prometheus/client_golang v1.0.0
@@ -84,10 +84,10 @@ github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
 # github.com/prometheus/procfs v0.0.3
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
-# github.com/segmentio/ksuid v1.0.2
-github.com/segmentio/ksuid
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
+# github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
+github.com/streadway/amqp
 # github.com/uber/jaeger-client-go v2.16.0+incompatible
 github.com/uber/jaeger-client-go
 github.com/uber/jaeger-client-go/config
@@ -113,11 +113,12 @@ github.com/videocoin/cloud-api/miners/v1
 github.com/videocoin/cloud-api/rpc
 github.com/videocoin/cloud-api/users/v1
 github.com/videocoin/cloud-api/accounts/v1
-# github.com/videocoin/cloud-pkg v0.0.2 => ../cloud-pkg
+# github.com/videocoin/cloud-pkg v0.0.5 => ../cloud-pkg
 github.com/videocoin/cloud-pkg/logger
 github.com/videocoin/cloud-pkg/tracer
 github.com/videocoin/cloud-pkg/auth
 github.com/videocoin/cloud-pkg/grpcutil
+github.com/videocoin/cloud-pkg/mqmux
 # golang.org/x/net v0.0.0-20190628185345-da137c7871d7
 golang.org/x/net/trace
 golang.org/x/net/context

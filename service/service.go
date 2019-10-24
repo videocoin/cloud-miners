@@ -27,7 +27,7 @@ func NewService(cfg *Config) (*Service, error) {
 	}
 
 	syncerLogger := cfg.Logger.WithField("system", "syncer")
-	syncer, err := NewDataSyncer(cfg.GraphiteAddr, 10*time.Second, ds, syncerLogger)
+	syncer, err := NewDataSyncer(cfg.CarbonURL, 10*time.Second, ds, syncerLogger)
 	if err != nil {
 		return nil, err
 	}

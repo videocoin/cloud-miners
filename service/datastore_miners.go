@@ -20,25 +20,23 @@ type MinerDatastore struct {
 }
 
 func NewMinerDatastore(db *gorm.DB) (*MinerDatastore, error) {
-	db.AutoMigrate(&v1.Miner{})
+	db.AutoMigrate(&Miner{})
 	return &MinerDatastore{db: db}, nil
 }
 
-func (ds *MinerDatastore) Create(ctx context.Context, userId, hash string) (*v1.Miner, error) {
+func (ds *MinerDatastore) Create(ctx context.Context, userID string) (*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Create")
 	defer span.Finish()
 
-	span.SetTag("user_id", userId)
-	span.SetTag("hash", hash)
+	span.SetTag("user_id", userID)
 
 	tx := ds.db.Begin()
 
 	id := uuid.New()
 
-	miner := &v1.Miner{
-		Id:     id.String(),
-		UserId: userId,
-		Hash:   hash,
+	miner := &Miner{
+		ID:     id.String(),
+		UserID: userID,
 	}
 
 	err := tx.Create(miner).Error
@@ -52,13 +50,13 @@ func (ds *MinerDatastore) Create(ctx context.Context, userId, hash string) (*v1.
 	return miner, nil
 }
 
-func (ds *MinerDatastore) Get(ctx context.Context, id string) (*v1.Miner, error) {
+func (ds *MinerDatastore) Get(ctx context.Context, id string) (*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Get")
 	defer span.Finish()
 
 	span.SetTag("id", id)
 
-	miner := new(v1.Miner)
+	miner := new(Miner)
 
 	if err := ds.db.Where("id = ?", id).First(&miner).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -71,32 +69,17 @@ func (ds *MinerDatastore) Get(ctx context.Context, id string) (*v1.Miner, error)
 	return miner, nil
 }
 
-func (ds *MinerDatastore) GetByHash(ctx context.Context, hash string) (*v1.Miner, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "GetByHash")
-	defer span.Finish()
-
-	span.SetTag("hash", hash)
-
-	miner := new(v1.Miner)
-
-	if err := ds.db.Where("hash = ?", hash).First(&miner).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, ErrMinerNotFound
-		}
-
-		return nil, fmt.Errorf("failed to get account by hash: %s", err.Error())
-	}
-
-	return miner, nil
-}
-
-func (ds *MinerDatastore) List(ctx context.Context, status v1.MinerStatus) ([]*v1.Miner, error) {
+func (ds *MinerDatastore) List(ctx context.Context, userID *string) ([]*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "List")
 	defer span.Finish()
 
-	miners := []*v1.Miner{}
+	miners := []*Miner{}
 
-	qs := ds.db.Where("status = ?", status).Find(&miners)
+	qs := ds.db
+	if userID != nil {
+		qs = qs.Where("user_id = ?", &userID)
+	}
+	qs = qs.Find(&miners)
 
 	if err := qs.Error; err != nil {
 		return nil, fmt.Errorf("failed to get miners list: %s", err)
@@ -105,13 +88,13 @@ func (ds *MinerDatastore) List(ctx context.Context, status v1.MinerStatus) ([]*v
 	return miners, nil
 }
 
-func (ds *MinerDatastore) UpdateCPUIdle(ctx context.Context, miner *v1.Miner) error {
+func (ds *MinerDatastore) UpdateCPUIdle(ctx context.Context, miner *Miner) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Update")
 	defer span.Finish()
 
 	tx := ds.db.Begin()
 
-	err := ds.db.Model(&miner).UpdateColumn("cpu_idle", miner.CpuIdle).Error
+	err := ds.db.Model(&miner).UpdateColumn("cpu_idle", miner.CPUIdle).Error
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to update miner: %s", err)
@@ -122,17 +105,17 @@ func (ds *MinerDatastore) UpdateCPUIdle(ctx context.Context, miner *v1.Miner) er
 	return nil
 }
 
-func (ds *MinerDatastore) UpdateStatus(ctx context.Context, minerId string, status v1.MinerStatus) error {
+func (ds *MinerDatastore) UpdateStatus(ctx context.Context, minerID string, status v1.MinerStatus) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateStatus")
 	defer span.Finish()
 
-	span.SetTag("id", minerId)
+	span.SetTag("id", minerID)
 	span.SetTag("status", status)
 
 	tx := ds.db.Begin()
 
-	miner := v1.Miner{
-		Id:     minerId,
+	miner := Miner{
+		ID:     minerID,
 		Status: status,
 	}
 
@@ -153,7 +136,13 @@ func (ds *MinerDatastore) MarkAllAsOffline(ctx context.Context) error {
 
 	tx := ds.db.Begin()
 
-	err := ds.db.Table("miners").Updates(map[string]interface{}{"is_online": false}).Error
+	err := ds.db.
+		Table("miners").
+		Updates(map[string]interface{}{
+			"is_online": false,
+			"status":    v1.MinerStatusOffline,
+		}).
+		Error
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -170,7 +159,14 @@ func (ds *MinerDatastore) MarkAsOnline(ctx context.Context, ids []string) error 
 
 	tx := ds.db.Begin()
 
-	err := ds.db.Table("miners").Where("id IN (?)", ids).Updates(map[string]interface{}{"is_online": true}).Error
+	err := ds.db.
+		Table("miners").
+		Where("id IN (?)", ids).
+		Updates(map[string]interface{}{
+			"is_online": true,
+			"status":    v1.MinerStatusIdle,
+		}).
+		Error
 	if err != nil {
 		tx.Rollback()
 		return err

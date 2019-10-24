@@ -10,8 +10,8 @@ config: {}
 
 service:
   type: ClusterIP
-  externalRpcPort: 5010
-  internalRpcPort: 5010
+  externalRpcPort: 5011
+  internalRpcPort: 5011
 
 autoscaler:
   minCount: 1
@@ -19,13 +19,7 @@ autoscaler:
   targets:
     targetCPUUtilizationPercentage: 70
 
-resources:
-  limits:
-   cpu: 200m
-   memory: 1000Mi
-  requests:
-   cpu: 200m
-   memory: 1000Mi
+resources: {}
 
 secrets:
   sentryDsn: ""
