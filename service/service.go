@@ -3,6 +3,7 @@ package service
 type Service struct {
 	cfg *Config
 	rpc *RPCServer
+	ds  *Datastore
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -13,7 +14,7 @@ func NewService(cfg *Config) (*Service, error) {
 		Logger:          cfg.Logger,
 	}
 
-	ds, err := NewDatastore(cfg.DBURI)
+	ds, err := NewDatastore(cfg.DBURI, cfg.Logger.WithField("system", "datastore"))
 	if err != nil {
 		return nil, err
 	}
@@ -26,6 +27,7 @@ func NewService(cfg *Config) (*Service, error) {
 	svc := &Service{
 		cfg: cfg,
 		rpc: rpc,
+		ds:  ds,
 	}
 
 	return svc, nil
@@ -33,9 +35,11 @@ func NewService(cfg *Config) (*Service, error) {
 
 func (s *Service) Start() error {
 	go s.rpc.Start()
+	s.ds.StartBackgroundTasks()
 	return nil
 }
 
 func (s *Service) Stop() error {
+	s.ds.StopBackgroundTasks()
 	return nil
 }
