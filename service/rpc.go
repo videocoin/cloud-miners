@@ -157,6 +157,48 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 	return &v1.PingResponse{}, nil
 }
 
+func (s *RPCServer) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (*protoempty.Empty, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "AssignTask")
+	defer span.Finish()
+
+	span.SetTag("client_id", req.ClientID)
+
+	miner, err := s.ds.Miners.Get(ctx, req.ClientID)
+	if err != nil {
+		s.logger.Errorf("failed to get miner: %s", err)
+		return nil, err
+	}
+
+	err = s.ds.Miners.UpdateCurrentTask(ctx, miner, req.TaskID)
+	if err != nil {
+		s.logger.Errorf("failed to update current task: %s", err)
+		return nil, err
+	}
+
+	return &protoempty.Empty{}, nil
+}
+
+func (s *RPCServer) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest) (*protoempty.Empty, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UnassignTask")
+	defer span.Finish()
+
+	span.SetTag("client_id", req.ClientID)
+
+	miner, err := s.ds.Miners.Get(ctx, req.ClientID)
+	if err != nil {
+		s.logger.Errorf("failed to get miner: %s", err)
+		return nil, err
+	}
+
+	err = s.ds.Miners.UpdateCurrentTask(ctx, miner, "")
+	if err != nil {
+		s.logger.Errorf("failed to update current task: %s", err)
+		return nil, err
+	}
+
+	return &protoempty.Empty{}, nil
+}
+
 func (s *RPCServer) authenticate(ctx context.Context) (string, context.Context, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "authenticate")
 	defer span.Finish()

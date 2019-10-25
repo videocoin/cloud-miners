@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
-
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
+	"github.com/mailru/dbr"
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 )
@@ -114,6 +114,29 @@ func (ds *MinerDatastore) UpdateLastPingAt(ctx context.Context, miner *Miner) er
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to update last_ping_at: %s", err)
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
+func (ds *MinerDatastore) UpdateCurrentTask(ctx context.Context, miner *Miner, taskID string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCurrentTask")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	if taskID == "" {
+		miner.CurrentTaskID = dbr.NewNullString(nil)
+	} else {
+		miner.CurrentTaskID = dbr.NewNullString(taskID)
+	}
+
+	err := ds.db.Model(&miner).UpdateColumn("current_task_id", miner.CurrentTaskID).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to update current_task_id: %s", err)
 	}
 
 	tx.Commit()
