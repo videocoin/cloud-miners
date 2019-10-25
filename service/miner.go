@@ -1,11 +1,33 @@
 package service
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/mailru/dbr"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 )
+
+type Tags map[string]string
+
+func (t Tags) Value() (driver.Value, error) {
+	b, err := json.Marshal(t)
+	if err != nil {
+		return nil, err
+	}
+	return string(b), nil
+}
+
+func (t *Tags) Scan(src interface{}) error {
+	source, ok := src.([]byte)
+	if !ok {
+		return errors.New("type assertion .([]byte) failed.")
+	}
+
+	return json.Unmarshal(source, t)
+}
 
 type Miner struct {
 	ID            string         `gorm:"primary_key"`
@@ -13,6 +35,7 @@ type Miner struct {
 	Status        v1.MinerStatus `gorm:"type:varchar(100)"`
 	LastPingAt    *time.Time
 	CurrentTaskID dbr.NullString
+	Tags          Tags `sql:"type:json"`
 }
 
 func (m *Miner) IsOnline() bool {
