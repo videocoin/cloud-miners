@@ -5,7 +5,7 @@ go 1.12
 require (
 	cloud.google.com/go v0.41.0 // indirect
 	github.com/AlekSi/pointer v1.1.0
-	github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a
+	github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a // indirect
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20190715232110-2b613d287457 // indirect
 	github.com/gogo/protobuf v1.3.1
@@ -15,6 +15,8 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/lib/pq v1.2.0 // indirect
+	github.com/mailru/dbr v3.0.0+incompatible
+	github.com/mailru/go-clickhouse v1.2.0 // indirect
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/prometheus/common v0.6.0 // indirect

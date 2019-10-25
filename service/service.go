@@ -1,11 +1,8 @@
 package service
 
-import "time"
-
 type Service struct {
-	cfg    *Config
-	rpc    *RPCServer
-	syncer *DataSyncer
+	cfg *Config
+	rpc *RPCServer
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -26,16 +23,9 @@ func NewService(cfg *Config) (*Service, error) {
 		return nil, err
 	}
 
-	syncerLogger := cfg.Logger.WithField("system", "syncer")
-	syncer, err := NewDataSyncer(cfg.CarbonURL, 10*time.Second, ds, syncerLogger)
-	if err != nil {
-		return nil, err
-	}
-
 	svc := &Service{
-		cfg:    cfg,
-		rpc:    rpc,
-		syncer: syncer,
+		cfg: cfg,
+		rpc: rpc,
 	}
 
 	return svc, nil
@@ -43,11 +33,9 @@ func NewService(cfg *Config) (*Service, error) {
 
 func (s *Service) Start() error {
 	go s.rpc.Start()
-	go s.syncer.Start()
 	return nil
 }
 
 func (s *Service) Stop() error {
-	go s.syncer.Stop()
 	return nil
 }

@@ -1,7 +1,5 @@
 # github.com/AlekSi/pointer v1.1.0
 github.com/AlekSi/pointer
-# github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a
-github.com/JensRantil/graphite-client
 # github.com/beorn7/perks v1.0.0
 github.com/beorn7/perks/quantile
 # github.com/certifi/gocertifi v0.0.0-20190506164543-d2eda7129713
@@ -64,6 +62,9 @@ github.com/jinzhu/inflection
 github.com/kelseyhightower/envconfig
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
+# github.com/mailru/dbr v3.0.0+incompatible
+github.com/mailru/dbr
+github.com/mailru/dbr/dialect
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/opentracing/opentracing-go v1.1.0

@@ -41,6 +41,8 @@ service MinersService {
             get: "/api/v1/miners"
         };
     }
+
+    rpc Ping(PingRequest) returns (PingResponse) {}
 }
 
 message MinerRequest {
@@ -55,3 +57,9 @@ message MinerResponse {
 message MinerListResponse {
     repeated MinerResponse items = 1;
 }
+
+message PingRequest {
+    string client_id = 1 [(gogoproto.customname) = "ClientID"];
+}
+  
+message PingResponse {}

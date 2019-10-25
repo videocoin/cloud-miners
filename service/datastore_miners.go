@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
+	"github.com/AlekSi/pointer"
 
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
@@ -88,16 +91,29 @@ func (ds *MinerDatastore) List(ctx context.Context, userID *string) ([]*Miner, e
 	return miners, nil
 }
 
-func (ds *MinerDatastore) UpdateCPUIdle(ctx context.Context, miner *Miner) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "Update")
+func (ds *MinerDatastore) UpdateLastPingAt(ctx context.Context, miner *Miner) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateLastPingAt")
 	defer span.Finish()
 
 	tx := ds.db.Begin()
 
-	err := ds.db.Model(&miner).UpdateColumn("cpu_idle", miner.CPUIdle).Error
+	miner.LastPingAt = pointer.ToTime(time.Now())
+	err := ds.db.Model(&miner).UpdateColumn("last_ping_at", miner.LastPingAt).Error
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("failed to update miner: %s", err)
+		return fmt.Errorf("failed to update last_ping_at: %s", err)
+	}
+
+	miner.Status = v1.MinerStatusIdle
+
+	if miner.CurrentTaskID.String != "" {
+		miner.Status = v1.MinerStatusBusy
+	}
+
+	err = ds.db.Model(&miner).UpdateColumn("status", miner.Status).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to update last_ping_at: %s", err)
 	}
 
 	tx.Commit()

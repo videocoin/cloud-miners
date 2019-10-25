@@ -136,6 +136,27 @@ func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRes
 	return resp, nil
 }
 
+func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "Ping")
+	defer span.Finish()
+
+	span.SetTag("client_id", req.ClientID)
+
+	miner, err := s.ds.Miners.Get(ctx, req.ClientID)
+	if err != nil {
+		s.logger.Errorf("failed to get miner: %s", err)
+		return nil, err
+	}
+
+	err = s.ds.Miners.UpdateLastPingAt(ctx, miner)
+	if err != nil {
+		s.logger.Errorf("failed to update last ping at: %s", err)
+		return nil, err
+	}
+
+	return &v1.PingResponse{}, nil
+}
+
 func (s *RPCServer) authenticate(ctx context.Context) (string, context.Context, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "authenticate")
 	defer span.Finish()
