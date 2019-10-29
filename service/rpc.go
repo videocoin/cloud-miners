@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"net"
 
 	"github.com/AlekSi/pointer"
@@ -152,6 +153,18 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 	if err != nil {
 		s.logger.Errorf("failed to update last ping at: %s", err)
 		return nil, err
+	}
+
+	sysInfo := map[string]interface{}{}
+	err = json.Unmarshal(req.SystemInfo, &sysInfo)
+	if err != nil {
+		s.logger.Errorf("failed to unmarshal system info: %s", err)
+	} else {
+		err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo)
+		if err != nil {
+			s.logger.Errorf("failed to update system info: %s", err)
+			return nil, err
+		}
 	}
 
 	return &v1.PingResponse{}, nil

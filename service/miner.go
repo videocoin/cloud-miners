@@ -29,13 +29,33 @@ func (t *Tags) Scan(src interface{}) error {
 	return json.Unmarshal(source, t)
 }
 
+type SystemInfo map[string]interface{}
+
+func (info SystemInfo) Value() (driver.Value, error) {
+	b, err := json.Marshal(info)
+	if err != nil {
+		return nil, err
+	}
+	return string(b), nil
+}
+
+func (info *SystemInfo) Scan(src interface{}) error {
+	source, ok := src.([]byte)
+	if !ok {
+		return errors.New("type assertion .([]byte) failed.")
+	}
+
+	return json.Unmarshal(source, info)
+}
+
 type Miner struct {
 	ID            string         `gorm:"primary_key"`
 	UserID        string         `gorm:"type:varchar(36)`
 	Status        v1.MinerStatus `gorm:"type:varchar(100)"`
 	LastPingAt    *time.Time
 	CurrentTaskID dbr.NullString
-	Tags          Tags `sql:"type:json"`
+	Tags          Tags       `sql:"type:json"`
+	SystemInfo    SystemInfo `sql:"type:json"`
 }
 
 func (m *Miner) IsOnline() bool {

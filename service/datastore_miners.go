@@ -121,6 +121,24 @@ func (ds *MinerDatastore) UpdateLastPingAt(ctx context.Context, miner *Miner) er
 	return nil
 }
 
+func (ds *MinerDatastore) UpdateSystemInfo(ctx context.Context, miner *Miner, systemInfo SystemInfo) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateSystemInfo")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	miner.SystemInfo = systemInfo
+	err := ds.db.Model(&miner).UpdateColumn("system_info", miner.SystemInfo).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to update system_info: %s", err)
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
 func (ds *MinerDatastore) UpdateCurrentTask(ctx context.Context, miner *Miner, taskID string) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCurrentTask")
 	defer span.Finish()
