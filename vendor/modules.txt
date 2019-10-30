@@ -23,10 +23,10 @@ github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/descriptor
 github.com/golang/protobuf/proto
-github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes/wrappers
 github.com/golang/protobuf/jsonpb
+github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/ptypes
@@ -114,6 +114,7 @@ github.com/videocoin/cloud-api/miners/v1
 github.com/videocoin/cloud-api/rpc
 github.com/videocoin/cloud-api/users/v1
 github.com/videocoin/cloud-api/accounts/v1
+github.com/videocoin/cloud-api/transfers/v1
 # github.com/videocoin/cloud-pkg v0.0.5 => ../cloud-pkg
 github.com/videocoin/cloud-pkg/logger
 github.com/videocoin/cloud-pkg/tracer

@@ -53,7 +53,7 @@ func (ds *MinerDatastore) Create(ctx context.Context, userID string) (*Miner, er
 	return miner, nil
 }
 
-func (ds *MinerDatastore) Get(ctx context.Context, id string) (*Miner, error) {
+func (ds *MinerDatastore) Get(ctx context.Context, id string, userID string) (*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Get")
 	defer span.Finish()
 
@@ -61,12 +61,17 @@ func (ds *MinerDatastore) Get(ctx context.Context, id string) (*Miner, error) {
 
 	miner := new(Miner)
 
-	if err := ds.db.Where("id = ?", id).First(&miner).Error; err != nil {
+	qs := ds.db.Where("id = ?", id)
+	if userID != "" {
+		qs = qs.Where("user_id = ?", userID)
+	}
+
+	if err := qs.First(&miner).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, ErrMinerNotFound
 		}
 
-		return nil, fmt.Errorf("failed to get account by id: %s", err.Error())
+		return nil, fmt.Errorf("failed to get miner by id: %s", err.Error())
 	}
 
 	return miner, nil
@@ -252,6 +257,46 @@ func (ds *MinerDatastore) MarkAsOffline(ctx context.Context, d time.Duration) er
 	if err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
+func (ds *MinerDatastore) SetTags(ctx context.Context, miner *Miner, tags []*v1.Tag) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "SetTags")
+	defer span.Finish()
+
+	span.SetTag("id", miner.ID)
+
+	tx := ds.db.Begin()
+
+	if miner.Tags == nil {
+		miner.Tags = Tags{}
+	}
+
+	for _, tag := range tags {
+		if tag.Value == "" {
+			delete(miner.Tags, tag.Key)
+		} else {
+			miner.Tags[tag.Key] = tag.Value
+		}
+	}
+
+	keysCount := 0
+	for range miner.Tags {
+		keysCount++
+	}
+
+	if keysCount == 0 {
+		miner.Tags = nil
+	}
+
+	err := ds.db.Model(&miner).UpdateColumn("tags", miner.Tags).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to set tags: %s", err)
 	}
 
 	tx.Commit()

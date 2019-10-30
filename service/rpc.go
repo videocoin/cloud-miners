@@ -124,9 +124,15 @@ func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRes
 
 	span.SetTag("id", req.Id)
 
+	userID, _, err := s.authenticate(ctx)
+	if err != nil {
+		s.logger.Error(err)
+		return nil, err
+	}
+
 	resp := &v1.MinerResponse{}
 
-	miner, err := s.ds.Miners.Get(ctx, req.Id)
+	miner, err := s.ds.Miners.Get(ctx, req.Id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +149,7 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 
 	span.SetTag("client_id", req.ClientID)
 
-	miner, err := s.ds.Miners.Get(ctx, req.ClientID)
+	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
 	if err != nil {
 		s.logger.Errorf("failed to get miner: %s", err)
 		return nil, err
@@ -176,7 +182,7 @@ func (s *RPCServer) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (
 
 	span.SetTag("client_id", req.ClientID)
 
-	miner, err := s.ds.Miners.Get(ctx, req.ClientID)
+	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
 	if err != nil {
 		s.logger.Errorf("failed to get miner: %s", err)
 		return nil, err
@@ -197,7 +203,7 @@ func (s *RPCServer) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest)
 
 	span.SetTag("client_id", req.ClientID)
 
-	miner, err := s.ds.Miners.Get(ctx, req.ClientID)
+	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
 	if err != nil {
 		s.logger.Errorf("failed to get miner: %s", err)
 		return nil, err
@@ -210,6 +216,38 @@ func (s *RPCServer) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest)
 	}
 
 	return &protoempty.Empty{}, nil
+}
+
+func (s *RPCServer) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.MinerResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "SetTags")
+	defer span.Finish()
+
+	span.SetTag("id", req.Id)
+
+	userID, _, err := s.authenticate(ctx)
+	if err != nil {
+		s.logger.Error(err)
+		return nil, err
+	}
+
+	resp := &v1.MinerResponse{}
+
+	miner, err := s.ds.Miners.Get(ctx, req.Id, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Id = miner.ID
+	resp.Status = miner.Status
+
+	if req.Tags != nil && len(req.Tags) > 0 {
+		err = s.ds.Miners.SetTags(ctx, miner, req.Tags)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return resp, nil
 }
 
 func (s *RPCServer) authenticate(ctx context.Context) (string, context.Context, error) {
