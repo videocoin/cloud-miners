@@ -143,6 +143,25 @@ func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRes
 	return resp, nil
 }
 
+func (s *RPCServer) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetByID")
+	defer span.Finish()
+
+	span.SetTag("id", req.Id)
+
+	resp := &v1.MinerResponse{}
+
+	miner, err := s.ds.Miners.Get(ctx, req.Id, "")
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Id = miner.ID
+	resp.Status = miner.Status
+
+	return resp, nil
+}
+
 func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Ping")
 	defer span.Finish()
