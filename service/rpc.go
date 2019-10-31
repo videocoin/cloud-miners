@@ -16,6 +16,8 @@ import (
 	"github.com/videocoin/cloud-pkg/grpcutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type RPCServerOptions struct {
@@ -39,7 +41,8 @@ type RPCServer struct {
 func NewRPCServer(opts *RPCServerOptions, ds *Datastore) (*RPCServer, error) {
 	grpcOpts := grpcutil.DefaultServerOpts(opts.Logger)
 	grpcServer := grpc.NewServer(grpcOpts...)
-
+	healthService := health.NewServer()
+	grpc_health_v1.RegisterHealthServer(grpcServer, healthService)
 	listen, err := net.Listen("tcp", opts.Addr)
 	if err != nil {
 		return nil, err
@@ -63,10 +66,6 @@ func NewRPCServer(opts *RPCServerOptions, ds *Datastore) (*RPCServer, error) {
 func (s *RPCServer) Start() error {
 	s.logger.Infof("starting rpc server on %s", s.addr)
 	return s.grpc.Serve(s.listen)
-}
-
-func (s *RPCServer) Health(ctx context.Context, req *protoempty.Empty) (*rpc.HealthStatus, error) {
-	return &rpc.HealthStatus{Status: "OK"}, nil
 }
 
 func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerResponse, error) {
