@@ -144,19 +144,30 @@ func (ds *MinerDatastore) UpdateSystemInfo(ctx context.Context, miner *Miner, sy
 	return nil
 }
 
-func (ds *MinerDatastore) UpdateCurrentTask(ctx context.Context, miner *Miner, taskID string) error {
+func (ds *MinerDatastore) UpdateCurrentTask(ctx context.Context, miner *Miner, taskID string, clearForceTask bool) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCurrentTask")
 	defer span.Finish()
 
 	tx := ds.db.Begin()
 
+	updateForceTask := false
 	if taskID == "" {
+		if clearForceTask && miner.Tags["force_task_id"] == miner.CurrentTaskID.String && miner.CurrentTaskID.String != "" {
+			updateForceTask = true
+			delete(miner.Tags, "force_task_id")
+		}
 		miner.CurrentTaskID = dbr.NewNullString(nil)
 	} else {
 		miner.CurrentTaskID = dbr.NewNullString(taskID)
 	}
 
-	err := ds.db.Model(&miner).UpdateColumn("current_task_id", miner.CurrentTaskID).Error
+	qs := ds.db.Model(&miner).UpdateColumn("current_task_id", miner.CurrentTaskID)
+
+	if updateForceTask {
+		qs = qs.UpdateColumn("tags", miner.Tags)
+	}
+
+	err := qs.Error
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to update current_task_id: %s", err)
@@ -302,4 +313,28 @@ func (ds *MinerDatastore) SetTags(ctx context.Context, miner *Miner, tags []*v1.
 	tx.Commit()
 
 	return nil
+}
+
+func (ds *MinerDatastore) GetForceTaskIDs(ctx context.Context) ([]string, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetForceTaskIDs")
+	defer span.Finish()
+
+	ids := []string{}
+	rows, err := ds.db.Model(&Miner{}).Select("JSON_UNQUOTE(JSON_EXTRACT(tags, '$.force_task_id'))").Rows()
+	if err != nil {
+		return []string{}, fmt.Errorf("failed to get force task ids: %s", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id string
+		err := rows.Scan(&id)
+		if err == nil {
+			if id != "" {
+				ids = append(ids, id)
+			}
+		}
+	}
+
+	return ids, nil
 }

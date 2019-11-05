@@ -15,9 +15,9 @@ import (
 	"github.com/videocoin/cloud-pkg/auth"
 	"github.com/videocoin/cloud-pkg/grpcutil"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 )
 
 type RPCServerOptions struct {
@@ -157,6 +157,7 @@ func (s *RPCServer) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.Mine
 
 	resp.Id = miner.ID
 	resp.Status = miner.Status
+	resp.Tags = miner.Tags
 
 	return resp, nil
 }
@@ -206,7 +207,7 @@ func (s *RPCServer) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (
 		return nil, err
 	}
 
-	err = s.ds.Miners.UpdateCurrentTask(ctx, miner, req.TaskID)
+	err = s.ds.Miners.UpdateCurrentTask(ctx, miner, req.TaskID, false)
 	if err != nil {
 		s.logger.Errorf("failed to update current task: %s", err)
 		return nil, err
@@ -227,7 +228,7 @@ func (s *RPCServer) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest)
 		return nil, err
 	}
 
-	err = s.ds.Miners.UpdateCurrentTask(ctx, miner, "")
+	err = s.ds.Miners.UpdateCurrentTask(ctx, miner, "", true)
 	if err != nil {
 		s.logger.Errorf("failed to update current task: %s", err)
 		return nil, err
@@ -297,4 +298,20 @@ func (s *RPCServer) getTokenType(ctx context.Context) auth.TokenType {
 	}
 
 	return tokenType
+}
+
+func (s *RPCServer) GetForceTaskList(ctx context.Context, req *protoempty.Empty) (*v1.ForceTaskListResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetForceTaskList")
+	defer span.Finish()
+
+	resp := &v1.ForceTaskListResponse{}
+
+	ids, err := s.ds.Miners.GetForceTaskIDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Ids = ids
+
+	return resp, nil
 }
