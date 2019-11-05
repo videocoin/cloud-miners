@@ -152,6 +152,7 @@ func (s *RPCServer) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.Mine
 
 	miner, err := s.ds.Miners.Get(ctx, req.Id, "")
 	if err != nil {
+		s.logger.Errorf("failed to get miner: %s", err)
 		return nil, err
 	}
 
