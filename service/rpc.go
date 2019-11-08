@@ -15,6 +15,7 @@ import (
 	"github.com/videocoin/cloud-pkg/auth"
 	"github.com/videocoin/cloud-pkg/grpcutil"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
@@ -138,6 +139,57 @@ func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRes
 
 	resp.Id = miner.ID
 	resp.Status = miner.Status
+
+	return resp, nil
+}
+
+func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1.MinerResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "Register")
+	defer span.Finish()
+
+	span.SetTag("client_id", req.ClientID)
+	span.SetTag("address", req.Address)
+
+	logger := s.logger.WithFields(logrus.Fields{
+		"client_id": req.ClientID,
+		"address":   req.Address,
+	})
+
+	resp := &v1.MinerResponse{}
+
+	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
+	if err != nil {
+		s.logger.Errorf("failed to get miner: %s", err)
+		return nil, err
+	}
+
+	err = s.ds.Miners.UpdateAddress(ctx, miner, req.Address)
+	if err != nil {
+		s.logger.Errorf("failed to update address: %s", err)
+		return nil, err
+	}
+
+	if miner.Status != v1.MinerStatusOffline {
+		logger.Warningf("miner is already running")
+		return nil, grpc.Errorf(codes.AlreadyExists, "miner is already running")
+	}
+
+	minerList, err := s.ds.Miners.ListByAddress(ctx, req.Address)
+	if err != nil {
+		s.logger.Errorf("failed to list by address: %s", err)
+		return nil, err
+	}
+
+	for _, m := range minerList {
+		if m.Status == v1.MinerStatusIdle || m.Status == v1.MinerStatusBusy {
+			logger.Warningf("miner is already running")
+			return nil, grpc.Errorf(codes.AlreadyExists, "miner is already running")
+		}
+	}
+
+	resp.Id = miner.ID
+	resp.Status = miner.Status
+	resp.Tags = miner.Tags
 
 	return resp, nil
 }

@@ -54,6 +54,7 @@ type Miner struct {
 	Status        v1.MinerStatus `gorm:"type:varchar(100)"`
 	LastPingAt    *time.Time
 	CurrentTaskID dbr.NullString
+	Address       dbr.NullString
 	Tags          Tags       `sql:"type:json"`
 	SystemInfo    SystemInfo `sql:"type:json"`
 }

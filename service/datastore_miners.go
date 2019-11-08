@@ -77,6 +77,20 @@ func (ds *MinerDatastore) Get(ctx context.Context, id string, userID string) (*M
 	return miner, nil
 }
 
+func (ds *MinerDatastore) ListByAddress(ctx context.Context, address string) ([]*Miner, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "ListByAddress")
+	defer span.Finish()
+
+	miners := []*Miner{}
+
+	err := ds.db.Find(&miners).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return miners, nil
+}
+
 func (ds *MinerDatastore) List(ctx context.Context, userID *string) ([]*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "List")
 	defer span.Finish()
@@ -196,6 +210,25 @@ func (ds *MinerDatastore) UpdateStatus(ctx context.Context, minerID string, stat
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to mark miner as busy: %s", err)
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
+func (ds *MinerDatastore) UpdateAddress(ctx context.Context, miner *Miner, address string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateAddress")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	miner.Address = dbr.NewNullString(address)
+
+	err := ds.db.Model(&miner).UpdateColumn("address", miner.Address).Error
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
 
 	tx.Commit()
