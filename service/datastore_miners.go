@@ -90,7 +90,7 @@ func (ds *MinerDatastore) ListByAddress(ctx context.Context, address string) ([]
 
 	miners := []*Miner{}
 
-	err := ds.db.Find(&miners).Error
+	err := ds.db.Where("address = ?", address).Find(&miners).Error
 	if err != nil {
 		return nil, err
 	}

@@ -162,24 +162,26 @@ func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (
 
 	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
 	if err != nil {
-		s.logger.Errorf("failed to get miner: %s", err)
+		logger.Errorf("failed to get miner: %s", err)
 		return nil, err
 	}
 
 	err = s.ds.Miners.UpdateAddress(ctx, miner, req.Address)
 	if err != nil {
-		s.logger.Errorf("failed to update address: %s", err)
+		logger.Errorf("failed to update address: %s", err)
 		return nil, err
 	}
 
-	if miner.Status != v1.MinerStatusOffline {
+	logger.Infof("miner status is %s", miner.Status.String())
+
+	if miner.Status == v1.MinerStatusIdle || miner.Status == v1.MinerStatusBusy {
 		logger.Warningf("miner is already running")
 		return nil, grpc.Errorf(codes.AlreadyExists, "miner is already running")
 	}
 
 	minerList, err := s.ds.Miners.ListByAddress(ctx, req.Address)
 	if err != nil {
-		s.logger.Errorf("failed to list by address: %s", err)
+		logger.Errorf("failed to list by address: %s", err)
 		return nil, err
 	}
 
