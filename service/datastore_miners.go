@@ -8,6 +8,7 @@ import (
 
 	"github.com/AlekSi/pointer"
 	"github.com/google/uuid"
+	"github.com/goombaio/namegenerator"
 	"github.com/jinzhu/gorm"
 	"github.com/mailru/dbr"
 	"github.com/opentracing/opentracing-go"
@@ -37,9 +38,15 @@ func (ds *MinerDatastore) Create(ctx context.Context, userID string) (*Miner, er
 
 	id := uuid.New()
 
+	nameseed := time.Now().UTC().UnixNano()
+	namegen := namegenerator.NewNameGenerator(nameseed)
+	name := namegen.Generate()
+
 	miner := &Miner{
 		ID:     id.String(),
 		UserID: userID,
+		Name:   name,
+		Status: v1.MinerStatusNew,
 	}
 
 	err := tx.Create(miner).Error
@@ -293,7 +300,7 @@ func (ds *MinerDatastore) MarkAsOffline(ctx context.Context, d time.Duration) er
 
 	err := ds.db.
 		Table("miners").
-		Where("last_ping_at < ?", t).
+		Where("last_ping_at < ? AND status != ?", t, v1.MinerStatusNew).
 		Updates(map[string]interface{}{
 			"status": v1.MinerStatusOffline,
 		}).

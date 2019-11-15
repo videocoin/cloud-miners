@@ -87,6 +87,7 @@ func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.Mine
 
 	return &v1.MinerResponse{
 		Id:     miner.ID,
+		Name:   miner.Name,
 		Status: miner.Status,
 	}, nil
 }
@@ -111,6 +112,7 @@ func (s *RPCServer) List(ctx context.Context, req *v1.MinerRequest) (*v1.MinerLi
 	for _, miner := range miners {
 		resp.Items = append(resp.Items, &v1.MinerResponse{
 			Id:     miner.ID,
+			Name:   miner.Name,
 			Status: miner.Status,
 		})
 	}
@@ -139,6 +141,7 @@ func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRes
 
 	resp.Id = miner.ID
 	resp.Status = miner.Status
+	resp.Name = miner.Name
 
 	return resp, nil
 }
@@ -188,6 +191,7 @@ func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (
 	}
 
 	resp.Id = miner.ID
+	resp.Name = miner.Name
 	resp.Status = miner.Status
 	resp.Tags = miner.Tags
 
@@ -211,6 +215,7 @@ func (s *RPCServer) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.Mine
 	resp.Id = miner.ID
 	resp.Status = miner.Status
 	resp.Tags = miner.Tags
+	resp.Name = miner.Name
 
 	return resp, nil
 }
@@ -327,7 +332,7 @@ func (s *RPCServer) authenticate(ctx context.Context) (string, context.Context, 
 	defer span.Finish()
 
 	ctx = auth.NewContextWithSecretKey(ctx, s.authTokenSecret)
-	ctx, err := auth.AuthFromContext(ctx)
+	ctx, _, err := auth.AuthFromContext(ctx)
 	if err != nil {
 		return "", ctx, rpc.ErrRpcUnauthenticated
 	}
