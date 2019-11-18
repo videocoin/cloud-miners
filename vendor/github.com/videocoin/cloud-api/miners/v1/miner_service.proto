@@ -29,21 +29,24 @@ service MinersService {
         };
     }
 
-    rpc Register(RegistrationRequest) returns (MinerResponse) {}
+    rpc Delete(MinerRequest) returns (MinerResponse) {
+        option (google.api.http) = {
+            delete: "/api/v1/miners/{id}"
+        };
+    }
 
-    rpc GetByID(MinerRequest) returns (MinerResponse) {}
+    rpc Update(UpdateMinerRequest) returns (MinerResponse) {
+        option (google.api.http) = {
+            put: "/api/v1/miners/{id}"
+            body: "*"
+        };
+    }
 
     rpc List(MinerRequest) returns (MinerListResponse) {
         option (google.api.http) = {
             get: "/api/v1/miners"
         };
     }
-
-    rpc Ping(PingRequest) returns (PingResponse) {}
-
-    rpc AssignTask(AssignTaskRequest) returns (google.protobuf.Empty) {}
-
-    rpc UnassignTask(AssignTaskRequest) returns (google.protobuf.Empty) {}
 
     rpc SetTags(SetTagsRequest) returns (MinerResponse) {
         option (google.api.http) = {
@@ -52,6 +55,11 @@ service MinersService {
         };
     }
 
+    rpc Register(RegistrationRequest) returns (MinerResponse) {}
+    rpc GetByID(MinerRequest) returns (MinerResponse) {}
+    rpc Ping(PingRequest) returns (PingResponse) {}
+    rpc AssignTask(AssignTaskRequest) returns (google.protobuf.Empty) {}
+    rpc UnassignTask(AssignTaskRequest) returns (google.protobuf.Empty) {}
     rpc GetForceTaskList(google.protobuf.Empty) returns (ForceTaskListResponse) {}
 }
 
@@ -64,11 +72,17 @@ message MinerRequest {
     string id = 1;
 }
 
+message UpdateMinerRequest {
+    string id = 1;
+    string name = 2;
+}
+
 message MinerResponse {
     string id = 1;
     string name = 2;
     MinerStatus status = 3;
     map<string, string> tags = 4;
+    SystemInfo system_info = 5;
 }
 
 message MinerListResponse {

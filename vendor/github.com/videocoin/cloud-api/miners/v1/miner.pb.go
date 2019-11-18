@@ -4,11 +4,14 @@
 package v1
 
 import (
+	encoding_binary "encoding/binary"
 	fmt "fmt"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	golang_proto "github.com/golang/protobuf/proto"
+	io "io"
 	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -54,29 +57,429 @@ func (MinerStatus) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_a7d99a35436329cc, []int{0}
 }
 
+type SystemInfo struct {
+	CpuCores             int32    `protobuf:"varint,1,opt,name=cpu_cores,json=cpuCores,proto3" json:"cpu_cores,omitempty"`
+	CpuFreq              int32    `protobuf:"varint,2,opt,name=cpu_freq,json=cpuFreq,proto3" json:"cpu_freq,omitempty"`
+	CpuUsage             float32  `protobuf:"fixed32,3,opt,name=cpu_usage,json=cpuUsage,proto3" json:"cpu_usage,omitempty"`
+	MemUsage             float32  `protobuf:"fixed32,10,opt,name=mem_usage,json=memUsage,proto3" json:"mem_usage,omitempty"`
+	MemTotal             float32  `protobuf:"fixed32,11,opt,name=mem_total,json=memTotal,proto3" json:"mem_total,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SystemInfo) Reset()         { *m = SystemInfo{} }
+func (m *SystemInfo) String() string { return proto.CompactTextString(m) }
+func (*SystemInfo) ProtoMessage()    {}
+func (*SystemInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7d99a35436329cc, []int{0}
+}
+func (m *SystemInfo) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *SystemInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SystemInfo.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *SystemInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SystemInfo.Merge(m, src)
+}
+func (m *SystemInfo) XXX_Size() int {
+	return m.Size()
+}
+func (m *SystemInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_SystemInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SystemInfo proto.InternalMessageInfo
+
+func (m *SystemInfo) GetCpuCores() int32 {
+	if m != nil {
+		return m.CpuCores
+	}
+	return 0
+}
+
+func (m *SystemInfo) GetCpuFreq() int32 {
+	if m != nil {
+		return m.CpuFreq
+	}
+	return 0
+}
+
+func (m *SystemInfo) GetCpuUsage() float32 {
+	if m != nil {
+		return m.CpuUsage
+	}
+	return 0
+}
+
+func (m *SystemInfo) GetMemUsage() float32 {
+	if m != nil {
+		return m.MemUsage
+	}
+	return 0
+}
+
+func (m *SystemInfo) GetMemTotal() float32 {
+	if m != nil {
+		return m.MemTotal
+	}
+	return 0
+}
+
+func (*SystemInfo) XXX_MessageName() string {
+	return "cloud.api.miners.v1.SystemInfo"
+}
 func init() {
 	proto.RegisterEnum("cloud.api.miners.v1.MinerStatus", MinerStatus_name, MinerStatus_value)
 	golang_proto.RegisterEnum("cloud.api.miners.v1.MinerStatus", MinerStatus_name, MinerStatus_value)
+	proto.RegisterType((*SystemInfo)(nil), "cloud.api.miners.v1.SystemInfo")
+	golang_proto.RegisterType((*SystemInfo)(nil), "cloud.api.miners.v1.SystemInfo")
 }
 
 func init() { proto.RegisterFile("miners/v1/miner.proto", fileDescriptor_a7d99a35436329cc) }
 func init() { golang_proto.RegisterFile("miners/v1/miner.proto", fileDescriptor_a7d99a35436329cc) }
 
 var fileDescriptor_a7d99a35436329cc = []byte{
-	// 233 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xcd, 0xcd, 0xcc, 0x4b,
-	0x2d, 0x2a, 0xd6, 0x2f, 0x33, 0xd4, 0x07, 0xb3, 0xf4, 0x0a, 0x8a, 0xf2, 0x4b, 0xf2, 0x85, 0x84,
-	0x93, 0x73, 0xf2, 0x4b, 0x53, 0xf4, 0x12, 0x0b, 0x32, 0xf5, 0x20, 0x0a, 0xf4, 0xca, 0x0c, 0xa5,
-	0x74, 0xd3, 0x33, 0x4b, 0x32, 0x4a, 0x93, 0xf4, 0x92, 0xf3, 0x73, 0xf5, 0xd3, 0xf3, 0xd3, 0xf3,
-	0xf5, 0xc1, 0x6a, 0x93, 0x4a, 0xd3, 0xc0, 0x3c, 0x30, 0x07, 0xcc, 0x82, 0x98, 0xa1, 0xb5, 0x88,
-	0x91, 0x8b, 0xdb, 0x17, 0xa4, 0x39, 0xb8, 0x24, 0xb1, 0xa4, 0xb4, 0x58, 0x48, 0x9a, 0x8b, 0xd9,
-	0xcf, 0x35, 0x5c, 0x80, 0x41, 0x4a, 0xa8, 0x6b, 0xae, 0x02, 0x1f, 0x92, 0x8c, 0x5f, 0x6a, 0xb9,
-	0x90, 0x32, 0x17, 0xbb, 0xbf, 0x9b, 0x9b, 0x8f, 0xa7, 0x9f, 0xab, 0x00, 0xa3, 0x94, 0x58, 0xd7,
-	0x5c, 0x05, 0x21, 0x24, 0x05, 0xfe, 0x69, 0x69, 0x39, 0x99, 0x79, 0xa9, 0x42, 0xb2, 0x5c, 0x2c,
-	0x9e, 0x2e, 0x3e, 0xae, 0x02, 0x4c, 0x52, 0xc2, 0x5d, 0x73, 0x15, 0xf8, 0x91, 0x54, 0x78, 0xa6,
-	0xe4, 0x80, 0xa5, 0x9d, 0x42, 0x83, 0x23, 0x05, 0x98, 0x31, 0xa4, 0x9d, 0x4a, 0x8b, 0x2b, 0xa5,
-	0x84, 0x3b, 0x16, 0xcb, 0x31, 0xec, 0x5a, 0x22, 0x87, 0xec, 0x28, 0x27, 0x89, 0x13, 0x8f, 0xe4,
-	0x18, 0x2f, 0x3c, 0x92, 0x63, 0x7c, 0xf0, 0x48, 0x8e, 0xf1, 0xc0, 0x63, 0x39, 0xc6, 0x13, 0x8f,
-	0xe5, 0x18, 0xa3, 0x98, 0xca, 0x0c, 0x93, 0xd8, 0xc0, 0xbe, 0x30, 0x06, 0x04, 0x00, 0x00, 0xff,
-	0xff, 0x10, 0xb4, 0x84, 0x73, 0x22, 0x01, 0x00, 0x00,
+	// 340 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x90, 0xc1, 0x4a, 0xfb, 0x30,
+	0x00, 0xc6, 0x97, 0xee, 0xff, 0x77, 0x9a, 0x81, 0x96, 0x0c, 0xa5, 0x76, 0x18, 0x8a, 0x5e, 0x86,
+	0x60, 0xcb, 0xf0, 0x0d, 0xa6, 0x1b, 0x14, 0xe6, 0x06, 0xce, 0x21, 0x7a, 0x19, 0x5d, 0x97, 0xd6,
+	0x42, 0xb3, 0x74, 0x6d, 0x32, 0xd9, 0x1b, 0xc8, 0x5e, 0x41, 0x76, 0x51, 0x9f, 0xc2, 0x93, 0xc7,
+	0x1d, 0x7d, 0x04, 0xd9, 0x5e, 0x44, 0x9a, 0xaa, 0x54, 0xbc, 0x7d, 0x3f, 0x7e, 0xdf, 0x17, 0x92,
+	0xc0, 0x5d, 0x1a, 0x8c, 0x49, 0x9c, 0x58, 0xd3, 0xba, 0x25, 0x93, 0x19, 0xc5, 0x8c, 0x33, 0x54,
+	0x71, 0x43, 0x26, 0x46, 0xa6, 0x13, 0x05, 0x66, 0x56, 0x30, 0xa7, 0x75, 0xfd, 0xc4, 0x0f, 0xf8,
+	0x9d, 0x18, 0x9a, 0x2e, 0xa3, 0x96, 0xcf, 0x7c, 0x66, 0xc9, 0xee, 0x50, 0x78, 0x92, 0x24, 0xc8,
+	0x94, 0x9d, 0x71, 0xf8, 0x08, 0x20, 0xec, 0xcd, 0x12, 0x4e, 0xa8, 0x3d, 0xf6, 0x18, 0xaa, 0xc2,
+	0x2d, 0x37, 0x12, 0x03, 0x97, 0xc5, 0x24, 0xd1, 0x80, 0x01, 0x6a, 0xff, 0x2f, 0x37, 0xdd, 0x48,
+	0x9c, 0xa5, 0x8c, 0xf6, 0x61, 0x9a, 0x07, 0x5e, 0x4c, 0x26, 0x9a, 0x22, 0x5d, 0xc9, 0x8d, 0x44,
+	0x2b, 0x26, 0x93, 0xef, 0x9d, 0x48, 0x1c, 0x9f, 0x68, 0x45, 0x03, 0xd4, 0x14, 0xb9, 0xeb, 0xa7,
+	0x9c, 0x4a, 0x4a, 0xe8, 0x97, 0x84, 0x99, 0xa4, 0x84, 0xfe, 0x92, 0x9c, 0x71, 0x27, 0xd4, 0xca,
+	0x3f, 0xf2, 0x2a, 0xe5, 0xe3, 0x27, 0x00, 0xcb, 0x17, 0xe9, 0xd3, 0x7a, 0xdc, 0xe1, 0x22, 0x41,
+	0x55, 0x58, 0xec, 0x34, 0xaf, 0xd5, 0x82, 0x8e, 0xe6, 0x0b, 0x63, 0x3b, 0x67, 0x3a, 0xe4, 0x1e,
+	0x1d, 0xc1, 0x52, 0xb7, 0xd5, 0x6a, 0xdb, 0x9d, 0xa6, 0x0a, 0xf4, 0xbd, 0xf9, 0xc2, 0x40, 0xb9,
+	0x42, 0xd7, 0xf3, 0xc2, 0x60, 0x4c, 0xd0, 0x01, 0xfc, 0x67, 0x9f, 0xb7, 0x9b, 0xaa, 0xa2, 0x57,
+	0xe6, 0x0b, 0x63, 0x27, 0xd7, 0xb0, 0x47, 0xa1, 0xd4, 0x8d, 0x7e, 0xef, 0x46, 0x2d, 0xfe, 0xd1,
+	0x0d, 0x91, 0xcc, 0xf4, 0xca, 0xc3, 0x33, 0x2e, 0xbc, 0xbe, 0xe0, 0xfc, 0xa5, 0x1a, 0xda, 0x72,
+	0x85, 0xc1, 0xfb, 0x0a, 0x83, 0x8f, 0x15, 0x06, 0x6f, 0x6b, 0x0c, 0x96, 0x6b, 0x0c, 0x6e, 0x95,
+	0x69, 0x7d, 0xb8, 0x21, 0xff, 0xf8, 0xf4, 0x33, 0x00, 0x00, 0xff, 0xff, 0x8f, 0x1b, 0xc7, 0x64,
+	0xc0, 0x01, 0x00, 0x00,
 }
+
+func (m *SystemInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SystemInfo) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SystemInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.MemTotal != 0 {
+		i -= 4
+		encoding_binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(m.MemTotal))))
+		i--
+		dAtA[i] = 0x5d
+	}
+	if m.MemUsage != 0 {
+		i -= 4
+		encoding_binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(m.MemUsage))))
+		i--
+		dAtA[i] = 0x55
+	}
+	if m.CpuUsage != 0 {
+		i -= 4
+		encoding_binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(m.CpuUsage))))
+		i--
+		dAtA[i] = 0x1d
+	}
+	if m.CpuFreq != 0 {
+		i = encodeVarintMiner(dAtA, i, uint64(m.CpuFreq))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.CpuCores != 0 {
+		i = encodeVarintMiner(dAtA, i, uint64(m.CpuCores))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func encodeVarintMiner(dAtA []byte, offset int, v uint64) int {
+	offset -= sovMiner(v)
+	base := offset
+	for v >= 1<<7 {
+		dAtA[offset] = uint8(v&0x7f | 0x80)
+		v >>= 7
+		offset++
+	}
+	dAtA[offset] = uint8(v)
+	return base
+}
+func (m *SystemInfo) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.CpuCores != 0 {
+		n += 1 + sovMiner(uint64(m.CpuCores))
+	}
+	if m.CpuFreq != 0 {
+		n += 1 + sovMiner(uint64(m.CpuFreq))
+	}
+	if m.CpuUsage != 0 {
+		n += 5
+	}
+	if m.MemUsage != 0 {
+		n += 5
+	}
+	if m.MemTotal != 0 {
+		n += 5
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func sovMiner(x uint64) (n int) {
+	return (math_bits.Len64(x|1) + 6) / 7
+}
+func sozMiner(x uint64) (n int) {
+	return sovMiner(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *SystemInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMiner
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SystemInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SystemInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CpuCores", wireType)
+			}
+			m.CpuCores = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMiner
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CpuCores |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CpuFreq", wireType)
+			}
+			m.CpuFreq = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMiner
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CpuFreq |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 5 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CpuUsage", wireType)
+			}
+			var v uint32
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint32(encoding_binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+			iNdEx += 4
+			m.CpuUsage = float32(math.Float32frombits(v))
+		case 10:
+			if wireType != 5 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MemUsage", wireType)
+			}
+			var v uint32
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint32(encoding_binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+			iNdEx += 4
+			m.MemUsage = float32(math.Float32frombits(v))
+		case 11:
+			if wireType != 5 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MemTotal", wireType)
+			}
+			var v uint32
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint32(encoding_binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+			iNdEx += 4
+			m.MemTotal = float32(math.Float32frombits(v))
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMiner(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMiner
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMiner
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func skipMiner(dAtA []byte) (n int, err error) {
+	l := len(dAtA)
+	iNdEx := 0
+	depth := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return 0, ErrIntOverflowMiner
+			}
+			if iNdEx >= l {
+				return 0, io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		wireType := int(wire & 0x7)
+		switch wireType {
+		case 0:
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return 0, ErrIntOverflowMiner
+				}
+				if iNdEx >= l {
+					return 0, io.ErrUnexpectedEOF
+				}
+				iNdEx++
+				if dAtA[iNdEx-1] < 0x80 {
+					break
+				}
+			}
+		case 1:
+			iNdEx += 8
+		case 2:
+			var length int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return 0, ErrIntOverflowMiner
+				}
+				if iNdEx >= l {
+					return 0, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				length |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if length < 0 {
+				return 0, ErrInvalidLengthMiner
+			}
+			iNdEx += length
+		case 3:
+			depth++
+		case 4:
+			if depth == 0 {
+				return 0, ErrUnexpectedEndOfGroupMiner
+			}
+			depth--
+		case 5:
+			iNdEx += 4
+		default:
+			return 0, fmt.Errorf("proto: illegal wireType %d", wireType)
+		}
+		if iNdEx < 0 {
+			return 0, ErrInvalidLengthMiner
+		}
+		if depth == 0 {
+			return iNdEx, nil
+		}
+	}
+	return 0, io.ErrUnexpectedEOF
+}
+
+var (
+	ErrInvalidLengthMiner        = fmt.Errorf("proto: negative length found during unmarshaling")
+	ErrIntOverflowMiner          = fmt.Errorf("proto: integer overflow")
+	ErrUnexpectedEndOfGroupMiner = fmt.Errorf("proto: unexpected end of group")
+)
