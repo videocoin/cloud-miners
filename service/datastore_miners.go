@@ -243,6 +243,25 @@ func (ds *MinerDatastore) UpdateAddress(ctx context.Context, miner *Miner, addre
 	return nil
 }
 
+func (ds *MinerDatastore) UpdateName(ctx context.Context, miner *Miner, name string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateName")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	miner.Name = name
+
+	err := ds.db.Model(&miner).UpdateColumn("name", miner.Name).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
 func (ds *MinerDatastore) MarkAllAsOffline(ctx context.Context) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "MarkAllAsOffline")
 	defer span.Finish()
@@ -377,4 +396,18 @@ func (ds *MinerDatastore) GetForceTaskIDs(ctx context.Context) ([]string, error)
 	}
 
 	return ids, nil
+}
+
+func (ds *MinerDatastore) Delete(ctx context.Context, id string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "Delete")
+	defer span.Finish()
+
+	span.SetTag("id", id)
+
+	miner := &Miner{ID: id}
+	if err := ds.db.Delete(miner).Error; err != nil {
+		return fmt.Errorf("failed to delete miner %s", err)
+	}
+
+	return nil
 }
