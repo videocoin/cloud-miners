@@ -22,10 +22,10 @@ enum MinerStatus {
 }
 
 message SystemInfo {
-    int32 cpu_cores = 1;
-    int32 cpu_freq = 2;
-    float cpu_usage = 3;
+    double cpu_cores = 1;
+    double cpu_freq = 2;
+    double cpu_usage = 3;
 
-    float mem_usage = 10;
-    float mem_total = 11;
+    double mem_usage = 10;
+    double mem_total = 11;
 }

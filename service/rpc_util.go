@@ -45,13 +45,13 @@ func toMinerResponse(miner *Miner) *v1.MinerResponse {
 	info := &v1.SystemInfo{}
 
 	if cpuInfo, ok := miner.SystemInfo["cpu"]; ok {
-		info.CpuCores = int32(cpuInfo.(map[string]interface{})["cores"].(float64))
-		info.CpuFreq = int32(cpuInfo.(map[string]interface{})["freq"].(float64))
+		info.CpuCores = cpuInfo.(map[string]interface{})["cores"].(float64)
+		info.CpuFreq = cpuInfo.(map[string]interface{})["freq"].(float64)
 	}
 
 	if memInfo, ok := miner.SystemInfo["memory"]; ok {
-		info.MemUsage = float32(memInfo.(map[string]interface{})["used"].(float64))
-		info.MemTotal = float32(memInfo.(map[string]interface{})["total"].(float64))
+		info.MemUsage = memInfo.(map[string]interface{})["used"].(float64)
+		info.MemTotal = memInfo.(map[string]interface{})["total"].(float64)
 	}
 
 	return &v1.MinerResponse{
