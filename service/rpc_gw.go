@@ -128,7 +128,7 @@ func (s *RPCServer) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.Miner
 		return nil, err
 	}
 
-	if miner.Status != v1.MinerStatusOffline {
+	if miner.Status != v1.MinerStatusOffline && miner.Status != v1.MinerStatusNew {
 		return nil, rpc.NewRpcPermissionError("Worker must be offline to delete")
 	}
 
