@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"math"
 
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
@@ -47,6 +48,10 @@ func toMinerResponse(miner *Miner) *v1.MinerResponse {
 	if cpuInfo, ok := miner.SystemInfo["cpu"]; ok {
 		info.CpuCores = cpuInfo.(map[string]interface{})["cores"].(float64)
 		info.CpuFreq = cpuInfo.(map[string]interface{})["freq"].(float64)
+	}
+
+	if cpuUsage, ok := miner.SystemInfo["cpu_usage"]; ok {
+		info.CpuUsage = math.Round(cpuUsage.(float64)*100) / 100
 	}
 
 	if memInfo, ok := miner.SystemInfo["memory"]; ok {
