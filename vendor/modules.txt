@@ -16,21 +16,21 @@ github.com/go-sql-driver/mysql
 github.com/gogo/googleapis/google/api
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/types
+github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
-github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/protobuf v1.3.2
-github.com/golang/protobuf/descriptor
 github.com/golang/protobuf/proto
+github.com/golang/protobuf/descriptor
 github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes/wrappers
-github.com/golang/protobuf/jsonpb
+github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
+github.com/golang/protobuf/ptypes/struct
+github.com/golang/protobuf/jsonpb
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-github.com/golang/protobuf/ptypes
-github.com/golang/protobuf/ptypes/struct
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
 # github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
@@ -51,9 +51,9 @@ github.com/grpc-ecosystem/go-grpc-middleware/util/backoffutils
 # github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 github.com/grpc-ecosystem/go-grpc-prometheus
 # github.com/grpc-ecosystem/grpc-gateway v1.11.3
+github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options
 github.com/grpc-ecosystem/grpc-gateway/runtime
 github.com/grpc-ecosystem/grpc-gateway/utilities
-github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options
 github.com/grpc-ecosystem/grpc-gateway/internal
 # github.com/jinzhu/gorm v1.9.10
 github.com/jinzhu/gorm
@@ -112,6 +112,8 @@ github.com/uber/jaeger-client-go/thrift-gen/baggage
 # github.com/uber/jaeger-lib v2.0.0+incompatible
 github.com/uber/jaeger-lib/metrics
 # github.com/videocoin/cloud-api v0.1.160 => ../cloud-api
+github.com/videocoin/cloud-api/streams/private/v1
+github.com/videocoin/cloud-api/streams/v1
 github.com/videocoin/cloud-api/miners/v1
 github.com/videocoin/cloud-api/rpc
 github.com/videocoin/cloud-api/users/v1
@@ -120,9 +122,9 @@ github.com/videocoin/cloud-api/transfers/v1
 # github.com/videocoin/cloud-pkg v0.0.5 => ../cloud-pkg
 github.com/videocoin/cloud-pkg/logger
 github.com/videocoin/cloud-pkg/tracer
+github.com/videocoin/cloud-pkg/mqmux
 github.com/videocoin/cloud-pkg/auth
 github.com/videocoin/cloud-pkg/grpcutil
-github.com/videocoin/cloud-pkg/mqmux
 # golang.org/x/net v0.0.0-20190628185345-da137c7871d7
 golang.org/x/net/trace
 golang.org/x/net/context
@@ -142,17 +144,17 @@ golang.org/x/text/transform
 # google.golang.org/appengine v1.6.1
 google.golang.org/appengine/cloudsql
 # google.golang.org/genproto v0.0.0-20190716160619-c506a9f90610
+google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/protobuf/field_mask
-google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.22.0
 google.golang.org/grpc
 google.golang.org/grpc/codes
 google.golang.org/grpc/health
 google.golang.org/grpc/health/grpc_health_v1
 google.golang.org/grpc/reflection
-google.golang.org/grpc/grpclog
 google.golang.org/grpc/status
+google.golang.org/grpc/grpclog
 google.golang.org/grpc/keepalive
 google.golang.org/grpc/balancer
 google.golang.org/grpc/balancer/roundrobin

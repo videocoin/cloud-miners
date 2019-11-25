@@ -25,6 +25,7 @@ require (
 	github.com/prometheus/procfs v0.0.3 // indirect
 	github.com/segmentio/ksuid v1.0.2 // indirect
 	github.com/sirupsen/logrus v1.4.2
+	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/uber-go/atomic v1.4.0 // indirect
 	github.com/videocoin/cloud-api v0.1.160
 	github.com/videocoin/cloud-pkg v0.0.5

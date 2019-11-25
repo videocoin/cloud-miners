@@ -313,23 +313,16 @@ func (ds *MinerDatastore) MarkAsOffline(ctx context.Context, d time.Duration) er
 	span, _ := opentracing.StartSpanFromContext(ctx, "MarkAsOffline")
 	defer span.Finish()
 
-	tx := ds.db.Begin()
-
 	t := time.Now().Add(-d)
 
 	err := ds.db.
 		Table("miners").
-		Where("last_ping_at < ? AND status != ?", t, v1.MinerStatusNew).
-		Updates(map[string]interface{}{
-			"status": v1.MinerStatusOffline,
-		}).
+		Where("last_ping_at < ? AND status = ?", t, v1.MinerStatusIdle).
+		Updates(map[string]interface{}{"status": v1.MinerStatusOffline}).
 		Error
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
-
-	tx.Commit()
 
 	return nil
 }
@@ -398,6 +391,27 @@ func (ds *MinerDatastore) GetForceTaskIDs(ctx context.Context) ([]string, error)
 	return ids, nil
 }
 
+func (ds *MinerDatastore) MarkMinerAsOffline(ctx context.Context, miner *Miner) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "MarkMinerAsOffline")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	err := ds.db.
+		Table("miners").
+		Where("id = ?", miner.ID).
+		Updates(map[string]interface{}{"status": v1.MinerStatusOffline}).
+		Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
 func (ds *MinerDatastore) Delete(ctx context.Context, id string) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Delete")
 	defer span.Finish()
@@ -410,4 +424,19 @@ func (ds *MinerDatastore) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (ds *MinerDatastore) GetStuckMinerList(ctx context.Context, d time.Duration) ([]*Miner, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetStuckMinerList")
+	defer span.Finish()
+
+	t := time.Now().Add(-d)
+	miners := []*Miner{}
+
+	err := ds.db.Where("last_ping_at < ? AND status = ?", t, v1.MinerStatusBusy).Find(&miners).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return miners, nil
 }
