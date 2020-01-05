@@ -28,4 +28,7 @@ message SystemInfo {
 
     double mem_usage = 10;
     double mem_total = 11;
+
+    double latitude = 12;
+    double longitude = 13;
 }

@@ -59,6 +59,11 @@ func toMinerResponse(miner *Miner) *v1.MinerResponse {
 		info.MemTotal = memInfo.(map[string]interface{})["total"].(float64)
 	}
 
+	if geoInfo, ok := miner.SystemInfo["geo"]; ok {
+		info.Latitude = geoInfo.(map[string]interface{})["latitude"].(float64)
+		info.Longitude = geoInfo.(map[string]interface{})["longitude"].(float64)
+	}
+
 	return &v1.MinerResponse{
 		Id:         miner.ID,
 		Name:       miner.Name,
