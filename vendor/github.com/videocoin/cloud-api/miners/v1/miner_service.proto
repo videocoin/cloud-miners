@@ -73,6 +73,12 @@ service MinersService {
         };
     }
 
+     rpc All(google.protobuf.Empty) returns (MinerListResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/miners/all"
+        };
+    }
+
     rpc Get(MinerRequest) returns (MinerResponse) {
         option (google.api.http) = {
             get: "/api/v1/miners/{id}"

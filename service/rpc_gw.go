@@ -166,3 +166,21 @@ func (s *RPCServer) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.Mi
 
 	return toMinerResponse(miner), nil
 }
+
+func (s *RPCServer) All(ctx context.Context, req *protoempty.Empty) (*v1.MinerListResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "List")
+	defer span.Finish()
+
+	resp := &v1.MinerListResponse{Items: []*v1.MinerResponse{}}
+
+	miners, err := s.ds.Miners.List(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, miner := range miners {
+		resp.Items = append(resp.Items, toMinerResponse(miner))
+	}
+
+	return resp, nil
+}
