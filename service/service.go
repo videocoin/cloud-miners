@@ -9,6 +9,8 @@ type Service struct {
 	rpc *RPCServer
 	ds  *Datastore
 	eb  *eventbus.EventBus
+	mc  *MetricsCollector
+	ms  *MetricsServer
 }
 
 func NewService(cfg *Config) (*Service, error) {
@@ -39,11 +41,20 @@ func NewService(cfg *Config) (*Service, error) {
 		return nil, err
 	}
 
+	metricsServer, err := NewMetricsServer(cfg.MetricsAddr, cfg.Logger.WithField("system", "metrics-server"))
+	if err != nil {
+		return nil, err
+	}
+
+	metricsCollector := NewMetricsCollector(cfg.Name, ds)
+
 	svc := &Service{
 		cfg: cfg,
 		rpc: rpc,
 		ds:  ds,
 		eb:  eb,
+		mc:  metricsCollector,
+		ms:  metricsServer,
 	}
 
 	return svc, nil
@@ -52,6 +63,8 @@ func NewService(cfg *Config) (*Service, error) {
 func (s *Service) Start() error {
 	go s.rpc.Start()
 	go s.eb.Start()
+	go s.mc.Start()
+	go s.ms.Start()
 	s.ds.StartBackgroundTasks()
 	return nil
 }
@@ -59,5 +72,6 @@ func (s *Service) Start() error {
 func (s *Service) Stop() error {
 	s.ds.StopBackgroundTasks()
 	s.eb.Stop()
+	s.mc.Stop()
 	return nil
 }

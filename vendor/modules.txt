@@ -64,9 +64,18 @@ github.com/jinzhu/inflection
 github.com/kelseyhightower/envconfig
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
+# github.com/labstack/echo v3.3.10+incompatible
+github.com/labstack/echo
+# github.com/labstack/gommon v0.2.9
+github.com/labstack/gommon/color
+github.com/labstack/gommon/log
 # github.com/mailru/dbr v3.0.0+incompatible
 github.com/mailru/dbr
 github.com/mailru/dbr/dialect
+# github.com/mattn/go-colorable v0.1.2
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.8
+github.com/mattn/go-isatty
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/opentracing/opentracing-go v1.1.0
@@ -77,6 +86,7 @@ github.com/opentracing/opentracing-go/log
 github.com/pkg/errors
 # github.com/prometheus/client_golang v1.0.0
 github.com/prometheus/client_golang/prometheus
+github.com/prometheus/client_golang/prometheus/promhttp
 github.com/prometheus/client_golang/prometheus/internal
 # github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
 github.com/prometheus/client_model/go
@@ -111,7 +121,11 @@ github.com/uber/jaeger-client-go/thrift-gen/agent
 github.com/uber/jaeger-client-go/thrift-gen/baggage
 # github.com/uber/jaeger-lib v2.0.0+incompatible
 github.com/uber/jaeger-lib/metrics
-# github.com/videocoin/cloud-api v0.1.160 => ../cloud-api
+# github.com/valyala/bytebufferpool v1.0.0
+github.com/valyala/bytebufferpool
+# github.com/valyala/fasttemplate v1.0.1
+github.com/valyala/fasttemplate
+# github.com/videocoin/cloud-api v0.2.14 => ../cloud-api
 github.com/videocoin/cloud-api/streams/private/v1
 github.com/videocoin/cloud-api/streams/v1
 github.com/videocoin/cloud-api/miners/v1
@@ -119,20 +133,23 @@ github.com/videocoin/cloud-api/rpc
 github.com/videocoin/cloud-api/users/v1
 github.com/videocoin/cloud-api/accounts/v1
 github.com/videocoin/cloud-api/transfers/v1
-# github.com/videocoin/cloud-pkg v0.0.5 => ../cloud-pkg
+# github.com/videocoin/cloud-pkg v0.0.6 => ../cloud-pkg
 github.com/videocoin/cloud-pkg/logger
 github.com/videocoin/cloud-pkg/tracer
 github.com/videocoin/cloud-pkg/mqmux
 github.com/videocoin/cloud-pkg/auth
 github.com/videocoin/cloud-pkg/grpcutil
-# golang.org/x/net v0.0.0-20190628185345-da137c7871d7
-golang.org/x/net/trace
+# golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+golang.org/x/crypto/acme/autocert
+golang.org/x/crypto/acme
+# golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
 golang.org/x/net/context
+golang.org/x/net/trace
+golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/http/httpguts
-golang.org/x/net/idna
 # golang.org/x/sys v0.0.0-20190712062909-fae7ac547cb7
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -147,7 +164,7 @@ google.golang.org/appengine/cloudsql
 google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/protobuf/field_mask
-# google.golang.org/grpc v1.22.0
+# google.golang.org/grpc v1.23.0
 google.golang.org/grpc
 google.golang.org/grpc/codes
 google.golang.org/grpc/health
