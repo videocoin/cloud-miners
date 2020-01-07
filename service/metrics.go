@@ -63,6 +63,8 @@ func (mc *MetricsCollector) collectMetrics() {
 		v1.MinerStatusOffline.String(),
 	}
 
+	mc.metrics.internalMinerStatus.Reset()
+
 	ctx := context.Background()
 	miners, err := mc.ds.Miners.List(ctx, nil)
 	if err == nil {
