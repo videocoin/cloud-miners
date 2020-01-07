@@ -71,11 +71,11 @@ func (mc *MetricsCollector) collectMetrics() {
 		for _, miner := range miners {
 			for _, status := range statuses {
 				hostname := ""
+				host, ok := miner.SystemInfo["host"].(map[string]interface{})
+				if ok {
+					hostname = host["hostname"].(string)
+				}
 				if status == miner.Status.String() {
-					host, ok := miner.SystemInfo["host"].(map[string]interface{})
-					if ok {
-						hostname = host["hostname"].(string)
-					}
 					mc.metrics.internalMinerStatus.WithLabelValues(status, hostname).Set(1)
 				} else {
 					mc.metrics.internalMinerStatus.WithLabelValues(status, hostname).Set(0)
