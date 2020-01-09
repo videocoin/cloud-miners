@@ -70,11 +70,11 @@ func toMinerResponse(miner *Miner) *v1.MinerResponse {
 	}
 
 	if balance, ok := miner.CryptoInfo["balance"]; ok {
-		cryptoInfo.Balance = []byte(balance.(string))
+		cryptoInfo.Balance = balance.(string)
 	}
 
 	if selfStake, ok := miner.CryptoInfo["self_stake"]; ok {
-		cryptoInfo.SelfStake = []byte(selfStake.(string))
+		cryptoInfo.SelfStake = selfStake.(string)
 	}
 
 	return &v1.MinerResponse{

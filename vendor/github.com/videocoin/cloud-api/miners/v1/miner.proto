@@ -35,6 +35,6 @@ message SystemInfo {
 
 message CryptoInfo {
     string address = 1;
-    bytes balance = 2;
-    bytes self_stake = 3;
+    string balance = 2;
+    string self_stake = 3;
 }
