@@ -29,9 +29,9 @@ func (t *Tags) Scan(src interface{}) error {
 	return json.Unmarshal(source, t)
 }
 
-type SystemInfo map[string]interface{}
+type Info map[string]interface{}
 
-func (info SystemInfo) Value() (driver.Value, error) {
+func (info Info) Value() (driver.Value, error) {
 	b, err := json.Marshal(info)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (info SystemInfo) Value() (driver.Value, error) {
 	return string(b), nil
 }
 
-func (info *SystemInfo) Scan(src interface{}) error {
+func (info *Info) Scan(src interface{}) error {
 	source, ok := src.([]byte)
 	if !ok {
 		return errors.New("type assertion .([]byte) failed.")
@@ -56,8 +56,9 @@ type Miner struct {
 	LastPingAt    *time.Time
 	CurrentTaskID dbr.NullString
 	Address       dbr.NullString
-	Tags          Tags       `sql:"type:json"`
-	SystemInfo    SystemInfo `sql:"type:json"`
+	Tags          Tags `sql:"type:json"`
+	SystemInfo    Info `sql:"type:json"`
+	CryptoInfo    Info `sql:"type:json"`
 }
 
 func (m *Miner) IsOnline() bool {

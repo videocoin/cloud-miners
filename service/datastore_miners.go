@@ -147,7 +147,7 @@ func (ds *MinerDatastore) UpdateLastPingAt(ctx context.Context, miner *Miner) er
 	return nil
 }
 
-func (ds *MinerDatastore) UpdateSystemInfo(ctx context.Context, miner *Miner, systemInfo SystemInfo) error {
+func (ds *MinerDatastore) UpdateSystemInfo(ctx context.Context, miner *Miner, systemInfo Info) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateSystemInfo")
 	defer span.Finish()
 
@@ -158,6 +158,24 @@ func (ds *MinerDatastore) UpdateSystemInfo(ctx context.Context, miner *Miner, sy
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to update system_info: %s", err)
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
+func (ds *MinerDatastore) UpdateCryptoInfo(ctx context.Context, miner *Miner, cryptoInfo Info) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCryptoInfo")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	miner.CryptoInfo = cryptoInfo
+	err := ds.db.Model(&miner).UpdateColumn("crypto_info", miner.CryptoInfo).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to update crypto_info: %s", err)
 	}
 
 	tx.Commit()

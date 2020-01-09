@@ -43,31 +43,45 @@ func (s *RPCServer) getTokenType(ctx context.Context) auth.TokenType {
 }
 
 func toMinerResponse(miner *Miner) *v1.MinerResponse {
-	info := &v1.SystemInfo{}
+	systemInfo := &v1.SystemInfo{}
 
 	if cpuInfo, ok := miner.SystemInfo["cpu"]; ok {
-		info.CpuCores = cpuInfo.(map[string]interface{})["cores"].(float64)
-		info.CpuFreq = cpuInfo.(map[string]interface{})["freq"].(float64)
+		systemInfo.CpuCores = cpuInfo.(map[string]interface{})["cores"].(float64)
+		systemInfo.CpuFreq = cpuInfo.(map[string]interface{})["freq"].(float64)
 	}
 
 	if cpuUsage, ok := miner.SystemInfo["cpu_usage"]; ok {
-		info.CpuUsage = math.Round(cpuUsage.(float64)*100) / 100
+		systemInfo.CpuUsage = math.Round(cpuUsage.(float64)*100) / 100
 	}
 
 	if memInfo, ok := miner.SystemInfo["memory"]; ok {
-		info.MemUsage = memInfo.(map[string]interface{})["used"].(float64)
-		info.MemTotal = memInfo.(map[string]interface{})["total"].(float64)
+		systemInfo.MemUsage = memInfo.(map[string]interface{})["used"].(float64)
+		systemInfo.MemTotal = memInfo.(map[string]interface{})["total"].(float64)
 	}
 
 	if geoInfo, ok := miner.SystemInfo["geo"]; ok {
-		info.Latitude = geoInfo.(map[string]interface{})["latitude"].(float64)
-		info.Longitude = geoInfo.(map[string]interface{})["longitude"].(float64)
+		systemInfo.Latitude = geoInfo.(map[string]interface{})["latitude"].(float64)
+		systemInfo.Longitude = geoInfo.(map[string]interface{})["longitude"].(float64)
+	}
+
+	cryptoInfo := &v1.CryptoInfo{}
+	if address, ok := miner.CryptoInfo["address"]; ok {
+		cryptoInfo.Address = address.(string)
+	}
+
+	if balance, ok := miner.CryptoInfo["balance"]; ok {
+		cryptoInfo.Balance = []byte(balance.(string))
+	}
+
+	if selfStake, ok := miner.CryptoInfo["self_stake"]; ok {
+		cryptoInfo.SelfStake = []byte(selfStake.(string))
 	}
 
 	return &v1.MinerResponse{
 		Id:         miner.ID,
 		Name:       miner.Name,
 		Status:     miner.Status,
-		SystemInfo: info,
+		SystemInfo: systemInfo,
+		CryptoInfo: cryptoInfo,
 	}
 }

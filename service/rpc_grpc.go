@@ -78,15 +78,13 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 		return nil, err
 	}
 
-	err = s.ds.Miners.UpdateLastPingAt(ctx, miner)
-	if err != nil {
+	if err := s.ds.Miners.UpdateLastPingAt(ctx, miner); err != nil {
 		s.logger.Errorf("failed to update last ping at: %s", err)
 		return nil, err
 	}
 
 	sysInfo := map[string]interface{}{}
-	err = json.Unmarshal(req.SystemInfo, &sysInfo)
-	if err != nil {
+	if err := json.Unmarshal(req.SystemInfo, &sysInfo); err != nil {
 		s.logger.Errorf("failed to unmarshal system info: %s", err)
 	} else {
 		_, ok1 := miner.SystemInfo["geo"]
@@ -104,11 +102,20 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 
 		}
 
-		err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo)
-		if err != nil {
+		if err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo); err != nil {
 			s.logger.Errorf("failed to update system info: %s", err)
 			return nil, err
 		}
+	}
+
+	cryptoInfo := map[string]interface{}{}
+	if err := json.Unmarshal(req.CryptoInfo, &cryptoInfo); err != nil {
+		s.logger.Errorf("failed to unmarshal crypto info: %s", err)
+	}
+
+	if err := s.ds.Miners.UpdateCryptoInfo(ctx, miner, cryptoInfo); err != nil {
+		s.logger.Errorf("failed to update crypto info: %s", err)
+		return nil, err
 	}
 
 	return &v1.PingResponse{}, nil
@@ -164,8 +171,7 @@ func (s *RPCServer) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (
 		return nil, err
 	}
 
-	err = s.ds.Miners.UpdateCurrentTask(ctx, miner, req.TaskID, false)
-	if err != nil {
+	if err := s.ds.Miners.UpdateCurrentTask(ctx, miner, req.TaskID, false); err != nil {
 		s.logger.Errorf("failed to update current task: %s", err)
 		return nil, err
 	}
@@ -185,8 +191,7 @@ func (s *RPCServer) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest)
 		return nil, err
 	}
 
-	err = s.ds.Miners.UpdateCurrentTask(ctx, miner, "", true)
-	if err != nil {
+	if err := s.ds.Miners.UpdateCurrentTask(ctx, miner, "", true); err != nil {
 		s.logger.Errorf("failed to update current task: %s", err)
 		return nil, err
 	}

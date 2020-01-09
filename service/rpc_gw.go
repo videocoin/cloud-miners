@@ -100,8 +100,7 @@ func (s *RPCServer) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1
 		return nil, err
 	}
 
-	err = s.ds.Miners.UpdateName(ctx, miner, req.Name)
-	if err != nil {
+	if err := s.ds.Miners.UpdateName(ctx, miner, req.Name); err != nil {
 		return nil, err
 	}
 
@@ -132,8 +131,7 @@ func (s *RPCServer) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.Miner
 		return nil, rpc.NewRpcPermissionError("Worker must be offline to delete")
 	}
 
-	err = s.ds.Miners.Delete(ctx, miner.ID)
-	if err != nil {
+	if err := s.ds.Miners.Delete(ctx, miner.ID); err != nil {
 		return nil, err
 	}
 
