@@ -37,7 +37,7 @@ func NewDatastore(uri string, eb *eventbus.EventBus, logger *logrus.Entry) (*Dat
 
 	ds.EB = eb
 	ds.Miners = minersDs
-	ds.offlineTimeout = 5 * time.Second
+	ds.offlineTimeout = 10 * time.Second
 	ds.offlineTicker = time.NewTicker(ds.offlineTimeout)
 
 	return ds, nil
