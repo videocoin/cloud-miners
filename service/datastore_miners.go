@@ -210,7 +210,7 @@ func (ds *MinerDatastore) UpdateCurrentTask(ctx context.Context, miner *Miner, t
 
 	updateForceTask := false
 	if taskID == "" {
-		if clearForceTask && miner.Tags["force_task_id"] == miner.CurrentTaskID.String && miner.CurrentTaskID.String != "" {
+		if clearForceTask {
 			updateForceTask = true
 			delete(miner.Tags, "force_task_id")
 		}
