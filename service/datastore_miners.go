@@ -117,6 +117,25 @@ func (ds *MinerDatastore) List(ctx context.Context, userID *string) ([]*Miner, e
 	return miners, nil
 }
 
+func (ds *MinerDatastore) ListByTag(ctx context.Context, tag, value string) ([]*Miner, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "ListByTag")
+	defer span.Finish()
+
+	miners := []*Miner{}
+
+	qs := ds.db
+	if tag != "" && value != "" {
+		qs = qs.Where("JSON_EXTRACT(tags, '$.force_task_id') = ?", value)
+	}
+	qs = qs.Find(&miners)
+
+	if err := qs.Error; err != nil {
+		return nil, fmt.Errorf("failed to get miners list: %s", err)
+	}
+
+	return miners, nil
+}
+
 func (ds *MinerDatastore) UpdateLastPingAt(ctx context.Context, miner *Miner) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateLastPingAt")
 	defer span.Finish()

@@ -185,15 +185,31 @@ func (s *RPCServer) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest)
 
 	span.SetTag("client_id", req.ClientID)
 
-	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
-	if err != nil {
-		s.logger.Errorf("failed to get miner: %s", err)
-		return nil, err
-	}
+	if req.ClientID != "" {
+		miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
+		if err != nil {
+			s.logger.Errorf("failed to get miner: %s", err)
+			return nil, err
+		}
 
-	if err := s.ds.Miners.UpdateCurrentTask(ctx, miner, "", true); err != nil {
-		s.logger.Errorf("failed to update current task: %s", err)
-		return nil, err
+		if err := s.ds.Miners.UpdateCurrentTask(ctx, miner, "", true); err != nil {
+			s.logger.Errorf("failed to update current task: %s", err)
+			return nil, err
+		}
+	} else {
+		if req.TaskID != "" {
+			miners, err := s.ds.Miners.ListByTag(ctx, "force_task_id", req.TaskID)
+			if err != nil {
+				s.logger.Errorf("failed to list miners by tag: %s", err)
+				return nil, err
+			}
+			for _, miner := range miners {
+				if err := s.ds.Miners.UpdateCurrentTask(ctx, miner, "", true); err != nil {
+					s.logger.Errorf("failed to update current task: %s", err)
+					return nil, err
+				}
+			}
+		}
 	}
 
 	return &protoempty.Empty{}, nil
