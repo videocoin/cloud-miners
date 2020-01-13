@@ -152,6 +152,10 @@ func (s *RPCServer) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.Mi
 
 	miner, err := s.ds.Miners.Get(ctx, req.Id, userID)
 	if err != nil {
+		if err == ErrMinerNotFound {
+			return nil, rpc.ErrRpcNotFound
+		}
+
 		return nil, err
 	}
 
