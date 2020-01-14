@@ -214,3 +214,30 @@ func (s *RPCServer) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest)
 
 	return &protoempty.Empty{}, nil
 }
+
+func (s *RPCServer) GetMinersWithForceTask(ctx context.Context, req *protoempty.Empty) (*v1.MinersWithForceTaskResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetMinersWithForceTask")
+	defer span.Finish()
+
+	resp := &v1.MinersWithForceTaskResponse{
+		Items: []*v1.MinerWithForceTaskResponse{},
+	}
+
+	miners, err := s.ds.Miners.List(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, miner := range miners {
+		if ft, ok := miner.Tags["force_task_id"]; ok {
+			if len(ft) > 0 {
+				resp.Items = append(resp.Items, &v1.MinerWithForceTaskResponse{
+					Id:     miner.ID,
+					TaskId: ft,
+				})
+			}
+		}
+	}
+
+	return resp, nil
+}
