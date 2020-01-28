@@ -56,9 +56,10 @@ type Miner struct {
 	LastPingAt    *time.Time
 	CurrentTaskID dbr.NullString
 	Address       dbr.NullString
-	Tags          Tags `sql:"type:json"`
-	SystemInfo    Info `sql:"type:json"`
-	CryptoInfo    Info `sql:"type:json"`
+	Tags          Tags       `sql:"type:json"`
+	SystemInfo    Info       `sql:"type:json"`
+	CryptoInfo    Info       `sql:"type:json"`
+	DeletedAt     *time.Time `gorm:"type:timestamp NULL;DEFAULT:null"`
 }
 
 func (m *Miner) IsOnline() bool {
