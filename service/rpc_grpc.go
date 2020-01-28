@@ -92,7 +92,7 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 		if !ok1 && ok2 {
 			latitude, longitude, err := GetGeoLocation(ip)
 			if err != nil {
-				s.logger.Errorf("failed to get ip geolocation: %s", err)
+				s.logger.Errorf("Failed to get ip geolocation: %s; IP: %s;", err, ip)
 			} else {
 				sysInfo["geo"] = map[string]interface{}{
 					"latitude":  latitude,

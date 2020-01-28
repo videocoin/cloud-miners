@@ -17,7 +17,7 @@ type ipwhoisResponse struct {
 }
 
 var (
-	ErrIpwhoisFailure = errors.New("Unsupported video format")
+	ErrIpwhoisFailure = errors.New("Ip Whois service failure")
 )
 
 func GetGeoLocation(ip string) (float32, float32, error) {
