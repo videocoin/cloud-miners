@@ -87,12 +87,13 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 	if err := json.Unmarshal(req.SystemInfo, &sysInfo); err != nil {
 		s.logger.Errorf("failed to unmarshal system info: %s", err)
 	} else {
-		_, ok1 := miner.SystemInfo["geo"]
-		ip, ok2 := sysInfo["ip"].(string)
-		if !ok1 && ok2 {
-			latitude, longitude, err := GetGeoLocation(ip)
+		geo, hasGeo := miner.SystemInfo["geo"]
+		currentIP, _ := miner.SystemInfo["ip"]
+		newIP, _ := sysInfo["ip"].(string)
+		if currentIP != newIP {
+			latitude, longitude, err := GetGeoLocation(newIP)
 			if err != nil {
-				s.logger.Errorf("Failed to get ip geolocation: %s; IP: %s;", err, ip)
+				s.logger.WithField("ip", newIP).Errorf("Failed to get ip geolocation: %s", err)
 			} else {
 				sysInfo["geo"] = map[string]interface{}{
 					"latitude":  latitude,
@@ -100,6 +101,8 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 				}
 			}
 
+		} else if hasGeo {
+			sysInfo["geo"] = geo
 		}
 
 		if err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo); err != nil {
