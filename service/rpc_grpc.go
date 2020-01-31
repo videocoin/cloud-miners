@@ -91,20 +91,25 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 		currentIP, _ := miner.SystemInfo["ip"]
 		newIP, _ := sysInfo["ip"].(string)
 		if currentIP != newIP {
-			latitude, longitude, err := GetGeoLocation(newIP)
-			if err != nil {
-				s.logger.WithField("ip", newIP).Errorf("Failed to get ip geolocation: %s", err)
-			} else {
-				sysInfo["geo"] = map[string]interface{}{
-					"latitude":  latitude,
-					"longitude": longitude,
-				}
-			}
+			go func(logger *logrus.Entry, ip string) {
+				latitude, longitude, err := GetGeoLocation(ip)
+				if err != nil {
+					s.logger.WithField("ip", newIP).Errorf("Failed to get ip geolocation: %s", err)
+				} else {
+					geoInfo := map[string]interface{}{
+						"latitude":  latitude,
+						"longitude": longitude,
+					}
 
-		} else if hasGeo {
+					if err := s.ds.Miners.UpdateGeolocation(ctx, miner, geoInfo); err != nil {
+						s.logger.Errorf("failed to update geolocation: %s", err)
+					}
+				}
+			}(s.logger, newIP)
+		}
+		if hasGeo {
 			sysInfo["geo"] = geo
 		}
-
 		if err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo); err != nil {
 			s.logger.Errorf("failed to update system info: %s", err)
 			return nil, err

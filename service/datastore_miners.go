@@ -184,6 +184,22 @@ func (ds *MinerDatastore) UpdateSystemInfo(ctx context.Context, miner *Miner, sy
 	return nil
 }
 
+func (ds *MinerDatastore) UpdateGeolocation(ctx context.Context, miner *Miner, geolocation Info) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateGeolocation")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+	err := ds.db.Exec("UPDATE miners SET system_info = JSON_SET(system_info, '$.geo', ?) WHERE id = ?;", geolocation, miner.ID).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
 func (ds *MinerDatastore) UpdateCryptoInfo(ctx context.Context, miner *Miner, cryptoInfo Info) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCryptoInfo")
 	defer span.Finish()
