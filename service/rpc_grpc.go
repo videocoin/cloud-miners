@@ -82,17 +82,16 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 		s.logger.Errorf("failed to update last ping at: %s", err)
 		return nil, err
 	}
-
-	sysInfo := map[string]interface{}{}
-	if err := json.Unmarshal(req.SystemInfo, &sysInfo); err != nil {
-		s.logger.Errorf("failed to unmarshal system info: %s", err)
-	} else {
-		geo, hasGeo := miner.SystemInfo["geo"]
-		currentIP, _ := miner.SystemInfo["ip"]
-		newIP, _ := sysInfo["ip"].(string)
-		if currentIP != newIP {
-			go func(logger *logrus.Entry, ip string) {
-				latitude, longitude, err := GetGeoLocation(ip)
+	go func(logger *logrus.Entry, req *v1.PingRequest) {
+		sysInfo := map[string]interface{}{}
+		if err := json.Unmarshal(req.SystemInfo, &sysInfo); err != nil {
+			s.logger.Errorf("failed to unmarshal system info: %s", err)
+		} else {
+			geo, hasGeo := miner.SystemInfo["geo"]
+			currentIP, _ := miner.SystemInfo["ip"]
+			newIP, _ := sysInfo["ip"].(string)
+			if currentIP != newIP {
+				latitude, longitude, err := GetGeoLocation(newIP)
 				if err != nil {
 					s.logger.WithField("ip", newIP).Errorf("Failed to get ip geolocation: %s", err)
 				} else {
@@ -105,26 +104,24 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 						s.logger.Errorf("failed to update geolocation: %s", err)
 					}
 				}
-			}(s.logger, newIP)
+			}
+			if hasGeo {
+				sysInfo["geo"] = geo
+			}
+			if err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo); err != nil {
+				s.logger.Errorf("failed to update system info: %s", err)
+			}
 		}
-		if hasGeo {
-			sysInfo["geo"] = geo
-		}
-		if err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo); err != nil {
-			s.logger.Errorf("failed to update system info: %s", err)
-			return nil, err
-		}
-	}
 
-	cryptoInfo := map[string]interface{}{}
-	if err := json.Unmarshal(req.CryptoInfo, &cryptoInfo); err != nil {
-		s.logger.Errorf("failed to unmarshal crypto info: %s", err)
-	}
+		cryptoInfo := map[string]interface{}{}
+		if err := json.Unmarshal(req.CryptoInfo, &cryptoInfo); err != nil {
+			s.logger.Errorf("failed to unmarshal crypto info: %s", err)
+		}
 
-	if err := s.ds.Miners.UpdateCryptoInfo(ctx, miner, cryptoInfo); err != nil {
-		s.logger.Errorf("failed to update crypto info: %s", err)
-		return nil, err
-	}
+		if err := s.ds.Miners.UpdateCryptoInfo(ctx, miner, cryptoInfo); err != nil {
+			s.logger.Errorf("failed to update crypto info: %s", err)
+		}
+	}(s.logger, req)
 
 	return &v1.PingResponse{}, nil
 }
