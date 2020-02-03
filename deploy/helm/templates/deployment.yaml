@@ -41,11 +41,6 @@ spec:
               value: "6831"
             - name: MINERS_RPCADDR
               value: 0.0.0.0:{{ .Values.service.internalRpcPort }}
-            - name: CARBONAPI_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Chart.Name }}
-                  key: carbonapiUrl
             - name: DBURI
               valueFrom:
                 secretKeyRef:
