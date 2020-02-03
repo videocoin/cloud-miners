@@ -2,6 +2,9 @@ package service
 
 import (
 	"github.com/videocoin/cloud-miners/eventbus"
+	"github.com/videocoin/cloud-pkg/grpcutil"
+	iamv1 "github.com/videocoin/videocoinapis-admin/videocoin/admin/iam/admin/v1"
+
 )
 
 type Service struct {
@@ -14,9 +17,16 @@ type Service struct {
 }
 
 func NewService(cfg *Config) (*Service, error) {
+	conn, err := grpcutil.Connect(cfg.IAMRPCAddr, cfg.Logger.WithField("system", "iamcli"))
+	if err != nil {
+		return nil, err
+	}
+	iam := iamv1.NewIAMClient(conn)
+
 	rpcConfig := &RPCServerOptions{
 		Addr:            cfg.Addr,
 		DBURI:           cfg.DBURI,
+		Iam: iam,
 		AuthTokenSecret: cfg.AuthTokenSecret,
 		Logger:          cfg.Logger,
 	}

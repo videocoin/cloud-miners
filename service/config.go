@@ -10,6 +10,8 @@ type Config struct {
 
 	Addr        string `default:"0.0.0.0:5011"`
 	MetricsAddr string `default:"0.0.0.0:15011"`
+	IAMRPCAddr  string
+
 	DBURI       string `default:"root:@tcp(127.0.0.1:3306)/videocoin?charset=utf8&parseTime=True&loc=Local" envconfig:"DBURI"`
 	MQURI       string `default:"amqp://guest:guest@127.0.0.1:5672" envconfig:"MQURI"`
 

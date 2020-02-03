@@ -299,6 +299,25 @@ func (ds *MinerDatastore) UpdateName(ctx context.Context, miner *Miner, name str
 	return nil
 }
 
+func (ds *MinerDatastore) UpdateKey(ctx context.Context, miner *Miner, key string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateKey")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	miner.Key = key
+
+	err := ds.db.Model(&miner).UpdateColumn("key", miner.Key).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
 func (ds *MinerDatastore) MarkAllAsOffline(ctx context.Context) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "MarkAllAsOffline")
 	defer span.Finish()

@@ -8,6 +8,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
+	iamv1 "github.com/videocoin/videocoinapis-admin/videocoin/admin/iam/admin/v1"
 )
 
 func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerResponse, error) {
@@ -25,6 +26,33 @@ func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.Mine
 		s.logger.Errorf("failed to create miner: %s", err)
 		return nil, rpc.ErrRpcInternal
 	}
+
+	saName := "projects/" + userId
+	_, err = s.iam.CreateServiceAccount(ctx, &iamv1.CreateServiceAccountRequest{
+		Name:      saName,
+		AccountId: miner.ID,
+	})
+	if err != nil {
+		s.logger.WithError(err).Error("failed to create service account")
+		return nil, rpc.ErrRpcInternal
+	}
+
+	saKeyName := saName + "/serviceAccounts/" + miner.ID
+	resp, err := s.iam.CreateServiceAccountKey(ctx, &iamv1.CreateServiceAccountKeyRequest{
+		Name: saKeyName,
+	})
+	if err != nil {
+		s.logger.WithError(err).Error("failed to create service account key")
+		return nil, rpc.ErrRpcInternal
+	}
+
+	err = s.ds.Miners.UpdateKey(ctx, miner, resp.Name)
+	if err != nil {
+		s.logger.WithError(err).Errorf("failed to update miner key")
+		return nil, rpc.ErrRpcInternal
+	}
+
+	miner.Key = resp.Name
 
 	return toMinerResponse(miner), nil
 }
@@ -124,15 +152,24 @@ func (s *RPCServer) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.Miner
 		if err == ErrMinerNotFound {
 			return nil, rpc.ErrRpcNotFound
 		}
-		return nil, err
+		return nil, rpc.ErrRpcInternal
 	}
 
 	if miner.Status != v1.MinerStatusOffline && miner.Status != v1.MinerStatusNew {
 		return nil, rpc.NewRpcPermissionError("Worker must be offline to delete")
 	}
 
+	saName := "projects/" + userID
+	_, err = s.iam.DeleteServiceAccount(ctx, &iamv1.DeleteServiceAccountRequest{
+		Name: saName,
+	})
+
+	if err != nil {
+		return nil, rpc.ErrRpcInternal
+	}
+
 	if err := s.ds.Miners.Delete(ctx, miner.ID); err != nil {
-		return nil, err
+		return nil, rpc.ErrRpcInternal
 	}
 
 	return toMinerResponse(miner), nil

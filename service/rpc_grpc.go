@@ -162,6 +162,23 @@ func (s *RPCServer) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.Mine
 	return resp, nil
 }
 
+func (s *RPCServer) GetKey(ctx context.Context, req *v1.KeyRequest) (*v1.KeyResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetKey")
+	defer span.Finish()
+
+	span.SetTag("id", req.ClientID)
+
+	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
+	if err != nil {
+		s.logger.Errorf("failed to get miner: %s", err)
+		return nil, err
+	}
+
+	return &v1.KeyResponse{
+		Key: miner.Key,
+	}, nil
+}
+
 func (s *RPCServer) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (*protoempty.Empty, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "AssignTask")
 	defer span.Finish()

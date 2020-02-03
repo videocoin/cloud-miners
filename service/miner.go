@@ -52,6 +52,7 @@ type Miner struct {
 	ID            string         `gorm:"primary_key"`
 	UserID        string         `gorm:"type:varchar(36)`
 	Name          string         `gorm:"type:varchar(255)"`
+	Key           string         `gorm:"type:varchar(255)"`
 	Status        v1.MinerStatus `gorm:"type:varchar(100)"`
 	LastPingAt    *time.Time
 	CurrentTaskID dbr.NullString

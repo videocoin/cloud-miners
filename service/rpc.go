@@ -10,11 +10,15 @@ import (
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	iamv1 "github.com/videocoin/videocoinapis-admin/videocoin/admin/iam/admin/v1"
 )
 
 type RPCServerOptions struct {
 	Addr            string
 	DBURI           string
+
+	Iam        iamv1.IAMClient
+
 	AuthTokenSecret string
 
 	Logger *logrus.Entry
@@ -26,6 +30,8 @@ type RPCServer struct {
 	listen net.Listener
 	logger *logrus.Entry
 	ds     *Datastore
+
+	iam        iamv1.IAMClient
 
 	authTokenSecret string
 }
@@ -46,6 +52,7 @@ func NewRPCServer(opts *RPCServerOptions, ds *Datastore) (*RPCServer, error) {
 		listen:          listen,
 		logger:          opts.Logger,
 		ds:              ds,
+		iam:             opts.Iam,
 		authTokenSecret: opts.AuthTokenSecret,
 	}
 
