@@ -8,7 +8,6 @@ require (
 	github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a // indirect
 	github.com/Pallinder/sillyname-go v0.0.0-20130730142914-97aeae9e6ba1 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20190715232110-2b613d287457 // indirect
-	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.3.2
 	github.com/google/uuid v1.1.1
@@ -31,10 +30,11 @@ require (
 	github.com/videocoin/cloud-api v0.2.14
 	github.com/videocoin/cloud-dispatcher v0.1.3 // indirect
 	github.com/videocoin/cloud-pkg v0.0.6
-	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
+	github.com/videocoin/videocoinapis-admin v0.1.1
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
 	golang.org/x/sys v0.0.0-20190712062909-fae7ac547cb7 // indirect
 	google.golang.org/grpc v1.23.0
+	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 )
 
 replace github.com/videocoin/cloud-api => ../cloud-api

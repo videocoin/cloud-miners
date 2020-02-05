@@ -980,9 +980,6 @@ func (m *Manager) acmeClient(ctx context.Context) (*acme.Client, error) {
 			return nil, err
 		}
 	}
-	if client.UserAgent == "" {
-		client.UserAgent = "autocert"
-	}
 	var contact []string
 	if m.Email != "" {
 		contact = []string{"mailto:" + m.Email}
