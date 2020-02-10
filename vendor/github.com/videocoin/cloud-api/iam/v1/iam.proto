@@ -1,47 +1,50 @@
 syntax = "proto3";
 
-package videocoin.admin.iam.admin.v1;
+package cloud.api.iam.v1;
 
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "videocoin/admin/iam/admin/v1";
+option go_package = "v1";
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.goproto_registration) = true;
+option (gogoproto.messagename_all) = true;
 
 service IAM {
-  // Lists [ServiceAccounts][videocoin.iam.admin.v1.ServiceAccount] for a
+  // Lists [ServiceAccounts][cloud.api.iam.v1.ServiceAccount] for a
   // project.
   rpc ListServiceAccounts(ListServiceAccountsRequest)
       returns (ListServiceAccountsResponse) {}
 
-  // Gets a [ServiceAccount][videocoin.iam.admin.v1.ServiceAccount].
+  // Gets a [ServiceAccount][cloud.api.iam.v1.ServiceAccount].
   rpc GetServiceAccount(GetServiceAccountRequest) returns (ServiceAccount) {}
 
-  // Creates a [ServiceAccount][videocoin.iam.admin.v1.ServiceAccount]
+  // Creates a [ServiceAccount][cloud.api.iam.v1.ServiceAccount]
   rpc CreateServiceAccount(CreateServiceAccountRequest)
       returns (ServiceAccount) {}
 
-  // Updates a [ServiceAccount][videocoin.iam.admin.v1.ServiceAccount].
-  // rpc UpdateServiceAccount(ServiceAccount) returns (ServiceAccount) {}
-
-  // Deletes a [ServiceAccount][videocoin.iam.admin.v1.ServiceAccount].
+  // Deletes a [ServiceAccount][cloud.api.iam.v1.ServiceAccount].
   rpc DeleteServiceAccount(DeleteServiceAccountRequest)
       returns (google.protobuf.Empty) {}
 
-  // Lists [ServiceAccountKeys][videocoin.iam.admin.v1.ServiceAccountKey].
+  // Lists [ServiceAccountKeys][cloud.api.iam.v1.ServiceAccountKey].
   rpc ListServiceAccountKeys(ListServiceAccountKeysRequest)
       returns (ListServiceAccountKeysResponse) {}
 
-  // Gets the [ServiceAccountKey][videocoin.iam.admin.v1.ServiceAccountKey]
+  // Gets the [ServiceAccountKey][cloud.api.iam.v1.ServiceAccountKey]
   // by key id.
   rpc GetServiceAccountKey(GetServiceAccountKeyRequest)
       returns (ServiceAccountKey) {}
 
-  // Creates a [ServiceAccountKey][videocoin.iam.admin.v1.ServiceAccountKey]
+  // Creates a [ServiceAccountKey][cloud.api.iam.v1.ServiceAccountKey]
   // and returns it.
   rpc CreateServiceAccountKey(CreateServiceAccountKeyRequest)
       returns (ServiceAccountKey) {}
 
-  // Deletes a [ServiceAccountKey][videocoin.iam.admin.v1.ServiceAccountKey].
+  // Deletes a [ServiceAccountKey][cloud.api.iam.v1.ServiceAccountKey].
   rpc DeleteServiceAccountKey(DeleteServiceAccountKeyRequest)
       returns (google.protobuf.Empty) {}
 }
@@ -49,12 +52,10 @@ service IAM {
 // A service account in the Identity and Access Management API.
 message ServiceAccount {
   // The resource name of the service account in the following format:
-  // `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`.
+  // `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT_EMAIL}`.
   //
   // Requests using `-` as a wildcard for the `PROJECT_ID` will infer the
-  // project from the `account` and the `ACCOUNT` value can be the `email`
-  // address or the `unique_id` of the service account.
-  // Note(Ricardo): {ACCOUNT} we only support the email currently!
+  // project from the `ACCOUNT_EMAIL`.
   string name = 1;
 
   // @OutputOnly The id of the project that owns the service account.
@@ -79,12 +80,12 @@ message ListServiceAccountsRequest {
 
   // Optional limit on the number of service accounts to include in the
   // response. Further accounts can subsequently be obtained by including the
-  // [ListServiceAccountsResponse.next_page_token][videocoin.iam.admin.v1.ListServiceAccountsResponse.next_page_token]
+  // [ListServiceAccountsResponse.next_page_token][cloud.api.iam.v1.ListServiceAccountsResponse.next_page_token]
   // in a subsequent request.
   int32 page_size = 2;
 
   // Optional pagination token returned in an earlier
-  // [ListServiceAccountsResponse.next_page_token][videocoin.iam.admin.v1.ListServiceAccountsResponse.next_page_token].
+  // [ListServiceAccountsResponse.next_page_token][cloud.api.iam.v1.ListServiceAccountsResponse.next_page_token].
   string page_token = 3;
 }
 
@@ -94,7 +95,7 @@ message ListServiceAccountsResponse {
   repeated ServiceAccount accounts = 1;
 
   // To retrieve the next page of results, set
-  // [ListServiceAccountsRequest.page_token][videocoin.iam.admin.v1.ListServiceAccountsRequest.page_token]
+  // [ListServiceAccountsRequest.page_token][cloud.api.iam.v1.ListServiceAccountsRequest.page_token]
   // to this value.
   string next_page_token = 2;
 }
@@ -102,11 +103,9 @@ message ListServiceAccountsResponse {
 // The service account get request.
 message GetServiceAccountRequest {
   // Required. The resource name of the service account in the following format:
-  // `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`.
+  // `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT_EMAIL}`.
   // Using `-` as a wildcard for the `PROJECT_ID` will infer the project from
-  // the account. The `ACCOUNT` value can be the `email` address or the
-  // `unique_id` of the service account.
-  // Note(Ricardo): {ACCOUNT} we only support the email currently!
+  // the `ACCOUNT_EMAIL`.
   string name = 1;
 }
 
@@ -121,22 +120,14 @@ message CreateServiceAccountRequest {
   // must be 6-30 characters long, and match the regular expression
   // `[a-z]([-a-z0-9]*[a-z0-9])` to comply with RFC1035.
   string account_id = 2;
-
-  // SKIP for now
-  // The [ServiceAccount][videocoin.iam.admin.v1.ServiceAccount] resource to
-  // create. Currently, only the following values are user assignable:
-  // `display_name` and `description`.
-  // ServiceAccount service_account = 3;
 }
 
 // The service account delete request.
 message DeleteServiceAccountRequest {
   // Required. The resource name of the service account in the following
-  // format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a
-  // wildcard for the `PROJECT_ID` will infer the project from the account.
-  // The `ACCOUNT` value can be the `email` address or the `unique_id` of the
-  // service account.
-  // Note(Ricardo): {ACCOUNT} we only support the email currently!
+  // format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT_EMAIL}`. Using `-`
+  // as a wildcard for the `PROJECT_ID` will infer the project from the
+  // `ACCOUNT_EMAIL`.
   string name = 1;
 }
 
@@ -163,8 +154,7 @@ enum ServiceAccountPrivateKeyType {
 
 message ServiceAccountKey {
   // The resource name of the service account key in the following format
-  // `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.
-  // Note(Ricardo): {ACCOUNT} we only support the email currently!
+  // `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT_EMAIL}/keys/{key}`.
   string name = 1;
 
   // The output format for the private key.
@@ -197,36 +187,12 @@ message ServiceAccountKey {
 
 // The service account keys list request.
 message ListServiceAccountKeysRequest {
-  /*
-  // `KeyType` filters to selectively retrieve certain varieties
-  // of keys.
-  enum KeyType {
-    // Unspecified key type. The presence of this in the
-    // message will immediately result in an error.
-    KEY_TYPE_UNSPECIFIED = 0;
-
-    // User-managed keys (managed and rotated by the user).
-    USER_MANAGED = 1;
-
-    // System-managed keys (managed and rotated by VideoCoin).
-    SYSTEM_MANAGED = 2;
-  }
-
-  */
   // Required. The resource name of the service account in the following
-  // format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`.
+  // format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT_EMAIL}`.
   //
   // Using `-` as a wildcard for the `PROJECT_ID`, will infer the project from
-  // the account. The `ACCOUNT` value can be the `email` address or the
-  // `unique_id` of the service account.
-  // Note(Ricardo): {ACCOUNT} we only support the email currently!
+  // the `ACCOUNT_EMAIL`.
   string name = 1;
-  /*
-  // Filters the types of keys the user wants to include in the list
-  // response. Duplicate key types are not allowed. If no key type
-  // is provided, all keys are returned.
-  repeated KeyType key_types = 2;
-  */
 }
 
 // The service account keys list response.
@@ -250,12 +216,10 @@ enum ServiceAccountPublicKeyType {
 // The service account key get by id request.
 message GetServiceAccountKeyRequest {
   // Required. The resource name of the service account key in the following
-  // format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.
+  // format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT_EMAIL}/keys/{key}`.
   //
   // Using `-` as a wildcard for the `PROJECT_ID` will infer the project from
-  // the account. The `ACCOUNT` value can be the `email` address or the
-  // `unique_id` of the service account.
-  // Note(Ricardo): {ACCOUNT} we only support the email currently!
+  // the `ACCOUNT_EMAIL`.
   string name = 1;
 
   // The output format of the public key requested.
@@ -266,31 +230,18 @@ message GetServiceAccountKeyRequest {
 // The service account key create request.
 message CreateServiceAccountKeyRequest {
   // Required. The resource name of the service account in the following
-  // format: `project/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a
-  // wildcard for the `PROJECT_ID` will infer the project from the account.
-  // The `ACCOUNT` value can be the `email` address or the `unique_id` of the
-  // service account.
+  // format: `project/{PROJECT_ID}/serviceAccounts/{ACCOUNT_EMAIL}`. Using `-`
+  // as a wildcard for the `PROJECT_ID` will infer the project from the
+  // `ACCOUNT_EMAIL`.
   string name = 1;
-
-  // The output format of the private key. The default value is
-  // `TYPE_VIDEOCOIN_CREDENTIALS_FILE`, which is the Google Credentials File
-  // format.
-  // ServiceAccountPrivateKeyType private_key_type = 2;
-
-  // Which type of key and algorithm to use for the key.
-  // The default is currently a 2K RSA key.  However this may change in the
-  // future.
-  // ServiceAccountKeyAlgorithm key_algorithm = 3;
 }
 
 // The service account key delete request.
 message DeleteServiceAccountKeyRequest {
   // Required. The resource name of the service account key in the following
-  // format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.
+  // format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT_EMAIL}/keys/{key}`.
   // Using
   // `-` as a wildcard for the `PROJECT_ID` will infer the project from the
-  // account. The `ACCOUNT` value can be the `email` address or the
-  // `unique_id` of the service account.
-  // Note(Ricardo): {ACCOUNT} we only support the email currently!
+  // `ACCOUNT_EMAIL`.
   string name = 1;
 }

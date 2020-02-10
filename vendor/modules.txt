@@ -28,7 +28,6 @@ github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
-github.com/golang/protobuf/ptypes/empty
 github.com/golang/protobuf/ptypes/struct
 github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/ptypes/wrappers
@@ -56,7 +55,7 @@ github.com/grpc-ecosystem/grpc-gateway/internal
 github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options
 github.com/grpc-ecosystem/grpc-gateway/runtime
 github.com/grpc-ecosystem/grpc-gateway/utilities
-# github.com/jinzhu/gorm v1.9.10
+# github.com/jinzhu/gorm v1.9.12
 github.com/jinzhu/gorm
 github.com/jinzhu/gorm/dialects/mysql
 # github.com/jinzhu/inflection v1.0.0
@@ -121,7 +120,7 @@ github.com/uber/jaeger-client-go/thrift-gen/sampling
 github.com/uber/jaeger-client-go/thrift-gen/zipkincore
 github.com/uber/jaeger-client-go/transport
 github.com/uber/jaeger-client-go/utils
-# github.com/uber/jaeger-lib v2.0.0+incompatible
+# github.com/uber/jaeger-lib v2.2.0+incompatible
 github.com/uber/jaeger-lib/metrics
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
@@ -129,6 +128,7 @@ github.com/valyala/bytebufferpool
 github.com/valyala/fasttemplate
 # github.com/videocoin/cloud-api v0.2.14 => ../cloud-api
 github.com/videocoin/cloud-api/accounts/v1
+github.com/videocoin/cloud-api/iam/v1
 github.com/videocoin/cloud-api/miners/v1
 github.com/videocoin/cloud-api/rpc
 github.com/videocoin/cloud-api/streams/private/v1
@@ -136,19 +136,21 @@ github.com/videocoin/cloud-api/streams/v1
 github.com/videocoin/cloud-api/transfers/v1
 github.com/videocoin/cloud-api/users/v1
 # github.com/videocoin/cloud-pkg v0.0.6 => ../cloud-pkg
+github.com/videocoin/cloud-pkg/api/resources
+github.com/videocoin/cloud-pkg/api/resources/project
+github.com/videocoin/cloud-pkg/api/resources/serviceaccount
 github.com/videocoin/cloud-pkg/auth
 github.com/videocoin/cloud-pkg/grpcutil
 github.com/videocoin/cloud-pkg/logger
 github.com/videocoin/cloud-pkg/mqmux
+github.com/videocoin/cloud-pkg/strings
 github.com/videocoin/cloud-pkg/tracer
-# github.com/videocoin/videocoinapis-admin v0.1.1
-github.com/videocoin/videocoinapis-admin/videocoin/admin/iam/admin/v1
 # go.uber.org/atomic v1.5.1
 go.uber.org/atomic
-# golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
+# golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
-# golang.org/x/lint v0.0.0-20190930215403-16217165b5de
+# golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f
 golang.org/x/lint
 golang.org/x/lint/golint
 # golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
@@ -167,7 +169,7 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.0.0-20191029041327-9cc4af7d6b2c
+# golang.org/x/tools v0.0.0-20200128002243-345141a36859
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/gcimporter
