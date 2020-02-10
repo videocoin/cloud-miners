@@ -7,6 +7,7 @@ import (
 	protoempty "github.com/gogo/protobuf/types"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
+	iamv1 "github.com/videocoin/cloud-api/iam/v1"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -174,8 +175,11 @@ func (s *RPCServer) GetKey(ctx context.Context, req *v1.KeyRequest) (*v1.KeyResp
 		return nil, err
 	}
 
+	key, err := s.iam.GetServiceAccountKey(ctx, &iamv1.GetServiceAccountKeyRequest{
+		Name: miner.Key,
+	})
 	return &v1.KeyResponse{
-		Key: miner.Key,
+		Key: string(key.PrivateKeyData),
 	}, nil
 }
 

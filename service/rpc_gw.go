@@ -6,30 +6,32 @@ import (
 	"github.com/AlekSi/pointer"
 	protoempty "github.com/gogo/protobuf/types"
 	"github.com/opentracing/opentracing-go"
+	iamv1 "github.com/videocoin/cloud-api/iam/v1"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
-	iamv1 "github.com/videocoin/videocoinapis-admin/videocoin/admin/iam/admin/v1"
+	"github.com/videocoin/cloud-pkg/api/resources/project"
+	account "github.com/videocoin/cloud-pkg/api/resources/serviceaccount"
 )
 
 func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Create")
 	defer span.Finish()
 
-	userId, _, err := s.authenticate(ctx)
+	userID, _, err := s.authenticate(ctx)
 	if err != nil {
 		s.logger.Error(err)
 		return nil, err
 	}
 
-	miner, err := s.ds.Miners.Create(ctx, userId)
+	miner, err := s.ds.Miners.Create(ctx, userID)
 	if err != nil {
 		s.logger.Errorf("failed to create miner: %s", err)
 		return nil, rpc.ErrRpcInternal
 	}
 
-	saName := "projects/" + userId
+	projName := project.NewName(userID)
 	_, err = s.iam.CreateServiceAccount(ctx, &iamv1.CreateServiceAccountRequest{
-		Name:      saName,
+		Name:      string(projName),
 		AccountId: miner.ID,
 	})
 	if err != nil {
@@ -37,9 +39,10 @@ func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.Mine
 		return nil, rpc.ErrRpcInternal
 	}
 
-	saKeyName := saName + "/serviceAccounts/" + miner.ID
+	email := account.NewEmail(projName.ID(), miner.ID)
+	name := account.NewName(projName.ID(), email)
 	resp, err := s.iam.CreateServiceAccountKey(ctx, &iamv1.CreateServiceAccountKeyRequest{
-		Name: saKeyName,
+		Name: string(name),
 	})
 	if err != nil {
 		s.logger.WithError(err).Error("failed to create service account key")
@@ -156,12 +159,15 @@ func (s *RPCServer) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.Miner
 	}
 
 	if miner.Status != v1.MinerStatusOffline && miner.Status != v1.MinerStatusNew {
-		return nil, rpc.NewRpcPermissionError("Worker must be offline to delete")
+		return nil, rpc.NewRpcPermissionError("worker must be offline to delete")
 	}
 
-	saName := "projects/" + userID
+	projName := project.NewName(userID)
+	email := account.NewEmail(projName.ID(), miner.ID)
+	name := account.NewName(projName.ID(), email)
+
 	_, err = s.iam.DeleteServiceAccount(ctx, &iamv1.DeleteServiceAccountRequest{
-		Name: saName,
+		Name: string(name),
 	})
 
 	if err != nil {

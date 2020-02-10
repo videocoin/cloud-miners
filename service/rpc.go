@@ -4,20 +4,20 @@ import (
 	"net"
 
 	"github.com/sirupsen/logrus"
+	iamv1 "github.com/videocoin/cloud-api/iam/v1"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-pkg/grpcutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
-	iamv1 "github.com/videocoin/videocoinapis-admin/videocoin/admin/iam/admin/v1"
 )
 
 type RPCServerOptions struct {
-	Addr            string
-	DBURI           string
+	Addr  string
+	DBURI string
 
-	Iam        iamv1.IAMClient
+	Iam iamv1.IAMClient
 
 	AuthTokenSecret string
 
@@ -31,7 +31,7 @@ type RPCServer struct {
 	logger *logrus.Entry
 	ds     *Datastore
 
-	iam        iamv1.IAMClient
+	iam iamv1.IAMClient
 
 	authTokenSecret string
 }

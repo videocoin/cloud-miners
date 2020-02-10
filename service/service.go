@@ -1,10 +1,9 @@
 package service
 
 import (
+	iamv1 "github.com/videocoin/cloud-api/iam/v1"
 	"github.com/videocoin/cloud-miners/eventbus"
 	"github.com/videocoin/cloud-pkg/grpcutil"
-	iamv1 "github.com/videocoin/videocoinapis-admin/videocoin/admin/iam/admin/v1"
-
 )
 
 type Service struct {
@@ -26,7 +25,7 @@ func NewService(cfg *Config) (*Service, error) {
 	rpcConfig := &RPCServerOptions{
 		Addr:            cfg.Addr,
 		DBURI:           cfg.DBURI,
-		Iam: iam,
+		Iam:             iam,
 		AuthTokenSecret: cfg.AuthTokenSecret,
 		Logger:          cfg.Logger,
 	}
