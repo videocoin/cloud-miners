@@ -189,7 +189,7 @@ func (ds *MinerDatastore) UpdateGeolocation(ctx context.Context, miner *Miner, g
 	defer span.Finish()
 
 	tx := ds.db.Begin()
-	err := ds.db.Exec("UPDATE miners SET system_info = JSON_SET(system_info, '$.geo', ?) WHERE id = ?;", geolocation, miner.ID).Error
+	err := ds.db.Exec("UPDATE miners SET system_info = JSON_SET(system_info, '$.geo', JSON_OBJECT('latitude', ?, 'longitude', ?)) WHERE id = ?;", geolocation["latitude"], geolocation["longitude"], miner.ID).Error
 	if err != nil {
 		tx.Rollback()
 		return err
