@@ -61,17 +61,26 @@ func NewService(cfg *Config) (*Service, error) {
 }
 
 func (s *Service) Start() error {
-	go s.rpc.Start()
-	go s.eb.Start()
-	go s.mc.Start()
-	go s.ms.Start()
+	go s.rpc.Start()  //nolint
+	go s.eb.Start()  //nolint
+	go s.mc.Start()  //nolint
+	go s.ms.Start()  //nolint
 	s.ds.StartBackgroundTasks()
 	return nil
 }
 
 func (s *Service) Stop() error {
-	s.ds.StopBackgroundTasks()
-	s.eb.Stop()
-	s.mc.Stop()
+	err := s.ds.StopBackgroundTasks()
+	if err != nil {
+		return err
+	}
+	err = s.eb.Stop()
+	if err != nil {
+		return err
+	}
+	err = s.mc.Stop()
+	if err != nil {
+		return err
+	}
 	return nil
 }

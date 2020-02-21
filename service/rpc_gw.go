@@ -14,13 +14,13 @@ func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.Mine
 	span, _ := opentracing.StartSpanFromContext(ctx, "Create")
 	defer span.Finish()
 
-	userId, _, err := s.authenticate(ctx)
+	userID, err := s.authenticate(ctx)
 	if err != nil {
 		s.logger.Error(err)
 		return nil, err
 	}
 
-	miner, err := s.ds.Miners.Create(ctx, userId)
+	miner, err := s.ds.Miners.Create(ctx, userID)
 	if err != nil {
 		s.logger.Errorf("failed to create miner: %s", err)
 		return nil, rpc.ErrRpcInternal
@@ -33,7 +33,7 @@ func (s *RPCServer) List(ctx context.Context, req *v1.MinerRequest) (*v1.MinerLi
 	span, _ := opentracing.StartSpanFromContext(ctx, "List")
 	defer span.Finish()
 
-	userID, _, err := s.authenticate(ctx)
+	userID, err := s.authenticate(ctx)
 	if err != nil {
 		s.logger.Error(err)
 		return nil, err
@@ -59,7 +59,7 @@ func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRes
 
 	span.SetTag("id", req.Id)
 
-	userID, _, err := s.authenticate(ctx)
+	userID, err := s.authenticate(ctx)
 	if err != nil {
 		s.logger.Error(err)
 		return nil, err
@@ -82,7 +82,7 @@ func (s *RPCServer) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1
 
 	span.SetTag("id", req.Id)
 
-	userID, _, err := s.authenticate(ctx)
+	userID, err := s.authenticate(ctx)
 	if err != nil {
 		s.logger.Error(err)
 		return nil, err
@@ -113,7 +113,7 @@ func (s *RPCServer) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.Miner
 
 	span.SetTag("id", req.Id)
 
-	userID, _, err := s.authenticate(ctx)
+	userID, err := s.authenticate(ctx)
 	if err != nil {
 		s.logger.Error(err)
 		return nil, err
@@ -144,7 +144,7 @@ func (s *RPCServer) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.Mi
 
 	span.SetTag("id", req.Id)
 
-	_, _, err := s.authenticate(ctx)
+	_, err := s.authenticate(ctx)
 	if err != nil {
 		s.logger.Error(err)
 		return nil, err

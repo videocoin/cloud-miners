@@ -8,8 +8,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1.MinerResponse, error) {
@@ -42,7 +42,7 @@ func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (
 
 	if miner.Status == v1.MinerStatusIdle || miner.Status == v1.MinerStatusBusy {
 		logger.Warningf("miner is already running")
-		return nil, grpc.Errorf(codes.AlreadyExists, "miner is already running")
+		return nil, status.Errorf(codes.AlreadyExists, "miner is already running")
 	}
 
 	minerList, err := s.ds.Miners.ListByAddress(ctx, req.Address)
@@ -54,7 +54,7 @@ func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (
 	for _, m := range minerList {
 		if m.Status == v1.MinerStatusIdle || m.Status == v1.MinerStatusBusy {
 			logger.Warningf("miner is already running")
-			return nil, grpc.Errorf(codes.AlreadyExists, "miner is already running")
+			return nil, status.Errorf(codes.AlreadyExists, "miner is already running")
 		}
 	}
 
@@ -85,39 +85,41 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 	go func(logger *logrus.Entry, req *v1.PingRequest) {
 		sysInfo := map[string]interface{}{}
 		if err := json.Unmarshal(req.SystemInfo, &sysInfo); err != nil {
-			s.logger.Errorf("failed to unmarshal system info: %s", err)
+			logger.Errorf("failed to unmarshal system info: %s", err)
 		} else {
 			geo, hasGeo := miner.SystemInfo["geo"]
-			currentIP, _ := miner.SystemInfo["ip"]
+			currentIP := miner.SystemInfo["ip"]
 			newIP, _ := sysInfo["ip"].(string)
 			if currentIP != newIP || !hasGeo {
 				latitude, longitude, err := GetGeoLocation(newIP)
 				if err != nil {
-					s.logger.WithField("ip", newIP).Errorf("Failed to get ip geolocation: %s", err)
+					logger.WithField("ip", newIP).Errorf("Failed to get ip geolocation: %s", err)
 				} else {
 					geoInfo := map[string]interface{}{
 						"latitude":  latitude,
 						"longitude": longitude,
 					}
 
-					sysInfo["geo"] = geoInfo
+					if err := s.ds.Miners.UpdateGeolocation(ctx, miner, geoInfo); err != nil {
+						logger.Errorf("failed to update geolocation: %s", err)
+					}
 				}
 			}
 			if hasGeo {
 				sysInfo["geo"] = geo
 			}
 			if err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo); err != nil {
-				s.logger.Errorf("failed to update system info: %s", err)
+				logger.Errorf("failed to update system info: %s", err)
 			}
 		}
 
 		cryptoInfo := map[string]interface{}{}
 		if err := json.Unmarshal(req.CryptoInfo, &cryptoInfo); err != nil {
-			s.logger.Errorf("failed to unmarshal crypto info: %s", err)
+			logger.Errorf("failed to unmarshal crypto info: %s", err)
 		}
 
 		if err := s.ds.Miners.UpdateCryptoInfo(ctx, miner, cryptoInfo); err != nil {
-			s.logger.Errorf("failed to update crypto info: %s", err)
+			logger.Errorf("failed to update crypto info: %s", err)
 		}
 	}(s.logger, req)
 

@@ -10,7 +10,7 @@ import (
 )
 
 type ipwhoisResponse struct {
-	Ip        string  `json:"ip"`
+	IP        string  `json:"ip"`
 	Success   bool    `json:"success"`
 	Latitude  float32 `json:"latitude,string"`
 	Longitude float32 `json:"longitude,string"`

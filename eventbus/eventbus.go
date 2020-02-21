@@ -64,11 +64,14 @@ func (e *EventBus) EmitUpdateStreamStatus(ctx context.Context, id string, status
 	if span != nil {
 		ext.SpanKindRPCServer.Set(span)
 		ext.Component.Set(span, "miners")
-		span.Tracer().Inject(
+		err := span.Tracer().Inject(
 			span.Context(),
 			opentracing.TextMap,
 			mqmux.RMQHeaderCarrier(headers),
 		)
+		if err != nil {
+			return err
+		}
 	}
 
 	event := &privatev1.Event{

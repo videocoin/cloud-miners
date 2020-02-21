@@ -23,7 +23,7 @@ func (t Tags) Value() (driver.Value, error) {
 func (t *Tags) Scan(src interface{}) error {
 	source, ok := src.([]byte)
 	if !ok {
-		return errors.New("type assertion .([]byte) failed.")
+		return errors.New("type assertion .([]byte) failed")
 	}
 
 	return json.Unmarshal(source, t)
@@ -42,7 +42,7 @@ func (info Info) Value() (driver.Value, error) {
 func (info *Info) Scan(src interface{}) error {
 	source, ok := src.([]byte)
 	if !ok {
-		return errors.New("type assertion .([]byte) failed.")
+		return errors.New("type assertion .([]byte) failed")
 	}
 
 	return json.Unmarshal(source, info)
@@ -50,7 +50,7 @@ func (info *Info) Scan(src interface{}) error {
 
 type Miner struct {
 	ID            string         `gorm:"primary_key"`
-	UserID        string         `gorm:"type:varchar(36)`
+	UserID        string         `gorm:"type:varchar(36)"`
 	Name          string         `gorm:"type:varchar(255)"`
 	Status        v1.MinerStatus `gorm:"type:varchar(100)"`
 	LastPingAt    *time.Time

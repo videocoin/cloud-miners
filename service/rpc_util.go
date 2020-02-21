@@ -11,26 +11,26 @@ import (
 	"github.com/videocoin/cloud-pkg/auth"
 )
 
-func (s *RPCServer) authenticate(ctx context.Context) (string, context.Context, error) {
+func (s *RPCServer) authenticate(ctx context.Context) (string, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "authenticate")
 	defer span.Finish()
 
 	ctx = auth.NewContextWithSecretKey(ctx, s.authTokenSecret)
 	ctx, _, err := auth.AuthFromContext(ctx)
 	if err != nil {
-		return "", ctx, rpc.ErrRpcUnauthenticated
+		return "", rpc.ErrRpcUnauthenticated
 	}
 
 	if s.getTokenType(ctx) == auth.TokenType(usersv1.TokenTypeAPI) {
-		return "", nil, rpc.ErrRpcPermissionDenied
+		return "", rpc.ErrRpcPermissionDenied
 	}
 
 	userID, ok := auth.UserIDFromContext(ctx)
 	if !ok {
-		return "", ctx, rpc.ErrRpcUnauthenticated
+		return "", rpc.ErrRpcUnauthenticated
 	}
 
-	return userID, ctx, nil
+	return userID, nil
 }
 
 func (s *RPCServer) getTokenType(ctx context.Context) auth.TokenType {
