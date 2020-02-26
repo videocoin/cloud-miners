@@ -7,7 +7,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/sirupsen/logrus"
-	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
+	dispatcherv1 "github.com/videocoin/cloud-api/dispatcher/v1"
 	"github.com/videocoin/cloud-miners/eventbus"
 )
 
@@ -80,7 +80,15 @@ func (ds *Datastore) startCheckOfflineTask() error {
 
 					go func() {
 						if miner.CurrentTaskID.String != "" {
-							ds.EB.EmitUpdateStreamStatus(ctx, miner.CurrentTaskID.String, streamsv1.StreamStatusFailed)
+							err = ds.EB.EmitUpdateTaskStatus(ctx, miner.CurrentTaskID.String, dispatcherv1.TaskStatusPending)
+							if err != nil {
+								ds.logger.Errorf("failed to emit update task status: %s", err)
+							}
+
+							err = ds.Miners.UpdateCurrentTask(context.Background(), miner, "", true)
+							if err != nil {
+								ds.logger.Errorf("failed to update current task: %s", err)
+							}
 						}
 					}()
 				}

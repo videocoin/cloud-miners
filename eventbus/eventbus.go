@@ -7,6 +7,7 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
+	v1 "github.com/videocoin/cloud-api/dispatcher/v1"
 	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
 	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
 	"github.com/videocoin/cloud-pkg/mqmux"
@@ -44,6 +45,11 @@ func (e *EventBus) Start() error {
 		return err
 	}
 
+	err = e.mq.Publisher("tasks.events")
+	if err != nil {
+		return err
+	}
+
 	return e.mq.Run()
 }
 
@@ -71,6 +77,32 @@ func (e *EventBus) EmitUpdateStreamStatus(ctx context.Context, id string, status
 		Status:   status,
 	}
 	err := e.mq.PublishX("streams.status", event, headers)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *EventBus) EmitUpdateTaskStatus(ctx context.Context, id string, status v1.TaskStatus) error {
+	headers := make(amqp.Table)
+
+	span := opentracing.SpanFromContext(ctx)
+	if span != nil {
+		ext.SpanKindRPCServer.Set(span)
+		ext.Component.Set(span, "miners")
+		span.Tracer().Inject(
+			span.Context(),
+			opentracing.TextMap,
+			mqmux.RMQHeaderCarrier(headers),
+		)
+	}
+
+	event := &v1.Event{
+		Type:   v1.EventTypeUpdateStatus,
+		TaskID: id,
+		Status: status,
+	}
+	err := e.mq.PublishX("tasks.events", event, headers)
 	if err != nil {
 		return err
 	}
