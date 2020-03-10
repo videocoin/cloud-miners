@@ -158,8 +158,12 @@ func (s *RPCServer) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.Mine
 	resp.Status = miner.Status
 	resp.Tags = miner.Tags
 	resp.Name = miner.Name
-	resp.SystemInfo = &v1.SystemInfo{
-		Hw: miner.SystemInfo["hw"].(string),
+	resp.SystemInfo = &v1.SystemInfo{}
+
+	if miner.SystemInfo != nil {
+		if hw, ok := miner.SystemInfo["hw"]; ok {
+			resp.SystemInfo.Hw = hw.(string)
+		}
 	}
 
 	return resp, nil
