@@ -93,11 +93,14 @@ func (e *EventBus) EmitUpdateTaskStatus(ctx context.Context, id string, status v
 	if span != nil {
 		ext.SpanKindRPCServer.Set(span)
 		ext.Component.Set(span, "miners")
-		span.Tracer().Inject(
+		err := span.Tracer().Inject(
 			span.Context(),
 			opentracing.TextMap,
 			mqmux.RMQHeaderCarrier(headers),
 		)
+		if err != nil {
+			return err
+		}
 	}
 
 	event := &v1.Event{
