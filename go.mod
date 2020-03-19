@@ -8,7 +8,6 @@ require (
 	github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a // indirect
 	github.com/Pallinder/sillyname-go v0.0.0-20130730142914-97aeae9e6ba1 // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/protobuf v1.3.2
 	github.com/google/uuid v1.1.1
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/jinzhu/gorm v1.9.12
