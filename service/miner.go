@@ -59,6 +59,7 @@ type Miner struct {
 	Tags          Tags       `sql:"type:json"`
 	SystemInfo    Info       `sql:"type:json"`
 	CryptoInfo    Info       `sql:"type:json"`
+	CapacityInfo  Info       `sql:"type:json"`
 	DeletedAt     *time.Time `gorm:"type:timestamp NULL;DEFAULT:null"`
 }
 
