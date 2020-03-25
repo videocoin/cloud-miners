@@ -118,6 +118,7 @@ service MinersService {
     rpc UnassignTask(AssignTaskRequest) returns (google.protobuf.Empty) {}
     rpc GetForceTaskList(google.protobuf.Empty) returns (ForceTaskListResponse) {}
     rpc GetMinersWithForceTask(google.protobuf.Empty) returns (MinersWithForceTaskResponse) {}
+    rpc GetMinersCandidates(GetMinersCandidatesRequest) returns (MinersCandidatesResponse) {}
 }
 
 message RegistrationRequest {
@@ -183,4 +184,22 @@ message MinerWithForceTaskResponse {
 
 message MinersWithForceTaskResponse {
     repeated MinerWithForceTaskResponse items = 1;
+}
+
+message GetMinersCandidatesRequest {
+    int32 encodeCapacity = 1;
+    int32 totalStake = 2;
+    int32 currentCPU = 3;
+}
+
+message MinerCandidateResponse {
+    string id = 1;
+    string name = 2;
+    int32 encodeCapacity = 3;
+    int32 totalStake = 4;
+    int32 currentCPU = 5;
+}
+
+message MinersCandidatesResponse {
+    repeated MinerCandidateResponse items = 1;
 }
