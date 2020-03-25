@@ -136,6 +136,23 @@ func (ds *MinerDatastore) ListByTag(ctx context.Context, tag, value string) ([]*
 	return miners, nil
 }
 
+func (ds *MinerDatastore) ListCandidates(ctx context.Context, encode, cpu int32) ([]*Miner, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "ListCandidates")
+	defer span.Finish()
+
+	miners := []*Miner{}
+
+	qs := ds.db.
+		Where("JSON_EXTRACT(capacity_info, '$.encode') >= ? AND JSON_EXTRACT(capacity_info, '$.cpu') >= ?", encode, cpu).
+		Find(&miners)
+
+	if err := qs.Error; err != nil {
+		return nil, fmt.Errorf("failed to list candidates: %s", err)
+	}
+
+	return miners, nil
+}
+
 func (ds *MinerDatastore) UpdateLastPingAt(ctx context.Context, miner *Miner) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateLastPingAt")
 	defer span.Finish()

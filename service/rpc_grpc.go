@@ -262,3 +262,28 @@ func (s *RPCServer) GetMinersWithForceTask(ctx context.Context, req *protoempty.
 
 	return resp, nil
 }
+
+func (s *RPCServer) GetMinersCandidates(ctx context.Context, req *v1.MinersCandidatesRequest) (*v1.MinersCandidatesResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetMinersCandidates")
+	defer span.Finish()
+
+	miners, err := s.ds.Miners.ListCandidates(ctx, req.EncodeCapacity, req.CpuCapacity)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &v1.MinersCandidatesResponse{
+		Items: []*v1.MinerCandidateResponse{},
+	}
+
+	for _, miner := range miners {
+		m := toMinerResponse(miner)
+		resp.Items = append(resp.Items, &v1.MinerCandidateResponse{
+			Id:             m.Id,
+			EncodeCapacity: m.CapacityInfo.Encode,
+			CpuCapacity:    m.CapacityInfo.Cpu,
+		})
+	}
+
+	return resp, nil
+}
