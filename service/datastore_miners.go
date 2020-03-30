@@ -218,6 +218,24 @@ func (ds *MinerDatastore) UpdateCryptoInfo(ctx context.Context, miner *Miner, cr
 	return nil
 }
 
+func (ds *MinerDatastore) UpdateCapacityInfo(ctx context.Context, miner *Miner, capacityInfo Info) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCapacityInfo")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	miner.CapacityInfo = capacityInfo
+	err := ds.db.Model(&miner).UpdateColumn("capacity_info", miner.CapacityInfo).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to update capacity_info: %s", err)
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
 func (ds *MinerDatastore) UpdateCurrentTask(ctx context.Context, miner *Miner, taskID string, clearForceTask bool) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCurrentTask")
 	defer span.Finish()

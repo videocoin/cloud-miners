@@ -121,6 +121,15 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 		if err := s.ds.Miners.UpdateCryptoInfo(ctx, miner, cryptoInfo); err != nil {
 			logger.Errorf("failed to update crypto info: %s", err)
 		}
+
+		capacityInfo := map[string]interface{}{}
+		if err := json.Unmarshal(req.CapacityInfo, &capacityInfo); err != nil {
+			logger.Errorf("failed to unmarshal capacity info: %s", err)
+		}
+
+		if err := s.ds.Miners.UpdateCapacityInfo(ctx, miner, capacityInfo); err != nil {
+			logger.Errorf("failed to update capacity info: %s", err)
+		}
 	}(s.logger, req)
 
 	return &v1.PingResponse{}, nil

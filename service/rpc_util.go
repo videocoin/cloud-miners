@@ -77,11 +77,20 @@ func toMinerResponse(miner *Miner) *v1.MinerResponse {
 		cryptoInfo.SelfStake = selfStake.(string)
 	}
 
+	capacityInfo := &v1.CapacityInfo{}
+	if value, ok := miner.CapacityInfo["encode"]; ok {
+		capacityInfo.Encode = value.(int32)
+	}
+	if value, ok := miner.CapacityInfo["cpu"]; ok {
+		capacityInfo.Cpu = value.(int32)
+	}
+
 	return &v1.MinerResponse{
-		Id:         miner.ID,
-		Name:       miner.Name,
-		Status:     miner.Status,
-		SystemInfo: systemInfo,
-		CryptoInfo: cryptoInfo,
+		Id:           miner.ID,
+		Name:         miner.Name,
+		Status:       miner.Status,
+		SystemInfo:   systemInfo,
+		CryptoInfo:   cryptoInfo,
+		CapacityInfo: capacityInfo,
 	}
 }
