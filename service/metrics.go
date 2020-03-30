@@ -85,9 +85,8 @@ func (mc *MetricsCollector) collectMetrics() {
 	}
 }
 
-func (mc *MetricsCollector) Start() error {
+func (mc *MetricsCollector) Start() {
 	go mc.Collect()
-	return nil
 }
 
 func (mc *MetricsCollector) Stop() error {
