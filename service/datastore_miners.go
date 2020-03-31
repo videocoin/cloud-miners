@@ -143,7 +143,7 @@ func (ds *MinerDatastore) ListCandidates(ctx context.Context, encode, cpu int32)
 	miners := []*Miner{}
 
 	qs := ds.db.
-		Where("JSON_EXTRACT(capacity_info, '$.encode') >= ? AND JSON_EXTRACT(capacity_info, '$.cpu') >= ?", encode, cpu).
+		Where("status = ? AND JSON_EXTRACT(capacity_info, '$.encode') >= ? AND JSON_EXTRACT(capacity_info, '$.cpu') >= ?", v1.MinerStatusIdle, encode, cpu).
 		Find(&miners)
 
 	if err := qs.Error; err != nil {
