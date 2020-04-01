@@ -3,12 +3,14 @@ package service
 import (
 	"context"
 	"math"
+	"math/big"
 
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
 	"github.com/videocoin/cloud-pkg/auth"
+	"github.com/videocoin/cloud-pkg/ethutils"
 )
 
 func (s *RPCServer) authenticate(ctx context.Context) (string, error) {
@@ -73,8 +75,8 @@ func toMinerResponse(miner *Miner) *v1.MinerResponse {
 		cryptoInfo.Balance = balance.(string)
 	}
 
-	if selfStake, ok := miner.CryptoInfo["self_stake"]; ok {
-		cryptoInfo.SelfStake = selfStake.(string)
+	if selfStake, ok := miner.CryptoInfo["stake"]; ok {
+		cryptoInfo.Stake = selfStake.(string)
 	}
 
 	capacityInfo := &v1.CapacityInfo{}
@@ -93,4 +95,12 @@ func toMinerResponse(miner *Miner) *v1.MinerResponse {
 		CryptoInfo:   cryptoInfo,
 		CapacityInfo: capacityInfo,
 	}
+}
+
+func toVid(amountWei string) float64 {
+	amount := new(big.Int)
+	amount, _ = amount.SetString(amountWei, 10)
+	v, _ := ethutils.WeiToEth(amount)
+	fv, _ := v.Float64()
+	return fv
 }

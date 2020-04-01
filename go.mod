@@ -3,10 +3,10 @@ module github.com/videocoin/cloud-miners
 go 1.12
 
 require (
-	cloud.google.com/go v0.41.0 // indirect
 	github.com/AlekSi/pointer v1.1.0
 	github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a // indirect
 	github.com/Pallinder/sillyname-go v0.0.0-20130730142914-97aeae9e6ba1 // indirect
+	github.com/bradfitz/slice v0.0.0-20180809154707-2b758aa73013 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
@@ -27,9 +27,9 @@ require (
 	github.com/videocoin/cloud-api v0.2.14
 	github.com/videocoin/cloud-dispatcher v0.1.3 // indirect
 	github.com/videocoin/cloud-pkg v0.0.6
-	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
-	golang.org/x/sys v0.0.0-20190712062909-fae7ac547cb7 // indirect
-	google.golang.org/grpc v1.23.0
+	go4.org v0.0.0-20200312051459-7028f7b4a332 // indirect
+	golang.org/x/net v0.0.0-20200222125558-5a598a2470a0
+	google.golang.org/grpc v1.27.1
 )
 
 replace github.com/videocoin/cloud-api => ../cloud-api

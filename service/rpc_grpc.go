@@ -279,9 +279,8 @@ func (s *RPCServer) GetMinersCandidates(ctx context.Context, req *v1.MinersCandi
 	for _, miner := range miners {
 		m := toMinerResponse(miner)
 		resp.Items = append(resp.Items, &v1.MinerCandidateResponse{
-			Id:             m.Id,
-			EncodeCapacity: m.CapacityInfo.Encode,
-			CpuCapacity:    m.CapacityInfo.Cpu,
+			ID:    m.Id,
+			Stake: int32(toVid(m.CryptoInfo.Stake)),
 		})
 	}
 

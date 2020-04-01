@@ -192,10 +192,8 @@ message MinersCandidatesRequest {
 }
 
 message MinerCandidateResponse {
-    string id = 1;
-    int32 encodeCapacity = 2;
-    int32 cpuCapacity = 3;
-    int32 totalStake = 4;
+    string id = 1 [(gogoproto.customname) = "ID"];
+    int32 stake = 2;
 }
 
 message MinersCandidatesResponse {
