@@ -113,22 +113,25 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 			}
 		}
 
-		cryptoInfo := map[string]interface{}{}
-		if err := json.Unmarshal(req.CryptoInfo, &cryptoInfo); err != nil {
-			logger.Errorf("failed to unmarshal crypto info: %s", err)
+		if req.CryptoInfo != nil && len(req.CryptoInfo) > 0 {
+			cryptoInfo := map[string]interface{}{}
+			if err := json.Unmarshal(req.CryptoInfo, &cryptoInfo); err != nil {
+				logger.Errorf("failed to unmarshal crypto info: %s", err)
+			}
+			if err := s.ds.Miners.UpdateCryptoInfo(ctx, miner, cryptoInfo); err != nil {
+				logger.Errorf("failed to update crypto info: %s", err)
+			}
 		}
 
-		if err := s.ds.Miners.UpdateCryptoInfo(ctx, miner, cryptoInfo); err != nil {
-			logger.Errorf("failed to update crypto info: %s", err)
-		}
+		if req.CapacityInfo != nil && len(req.CapacityInfo) > 0 {
+			capacityInfo := map[string]interface{}{}
+			if err := json.Unmarshal(req.CapacityInfo, &capacityInfo); err != nil {
+				logger.Errorf("failed to unmarshal capacity info: %s", err)
+			}
 
-		capacityInfo := map[string]interface{}{}
-		if err := json.Unmarshal(req.CapacityInfo, &capacityInfo); err != nil {
-			logger.Errorf("failed to unmarshal capacity info: %s", err)
-		}
-
-		if err := s.ds.Miners.UpdateCapacityInfo(ctx, miner, capacityInfo); err != nil {
-			logger.Errorf("failed to update capacity info: %s", err)
+			if err := s.ds.Miners.UpdateCapacityInfo(ctx, miner, capacityInfo); err != nil {
+				logger.Errorf("failed to update capacity info: %s", err)
+			}
 		}
 	}(s.logger, req)
 
