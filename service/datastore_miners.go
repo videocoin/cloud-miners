@@ -136,7 +136,7 @@ func (ds *MinerDatastore) ListByTag(ctx context.Context, tag, value string) ([]*
 	return miners, nil
 }
 
-func (ds *MinerDatastore) ListCandidates(ctx context.Context, encode, cpu int32) ([]*Miner, error) {
+func (ds *MinerDatastore) ListCandidates(ctx context.Context, encode, cpu float64) ([]*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "ListCandidates")
 	defer span.Finish()
 

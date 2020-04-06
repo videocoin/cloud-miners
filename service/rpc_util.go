@@ -81,10 +81,10 @@ func toMinerResponse(miner *Miner) *v1.MinerResponse {
 
 	capacityInfo := &v1.CapacityInfo{}
 	if value, ok := miner.CapacityInfo["encode"]; ok {
-		capacityInfo.Encode = value.(int32)
+		capacityInfo.Encode = value.(float64)
 	}
 	if value, ok := miner.CapacityInfo["cpu"]; ok {
-		capacityInfo.Cpu = value.(int32)
+		capacityInfo.Cpu = value.(float64)
 	}
 
 	return &v1.MinerResponse{
