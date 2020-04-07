@@ -62,6 +62,7 @@ func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (
 	resp.Name = miner.Name
 	resp.Status = miner.Status
 	resp.Tags = miner.Tags
+	resp.UserID = miner.UserID
 
 	return resp, nil
 }
@@ -173,6 +174,7 @@ func (s *RPCServer) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.Mine
 	resp.Tags = miner.Tags
 	resp.Name = miner.Name
 	resp.SystemInfo = &v1.SystemInfo{}
+	resp.UserID = miner.UserID
 
 	if miner.SystemInfo != nil {
 		if hw, ok := miner.SystemInfo["hw"]; ok {
