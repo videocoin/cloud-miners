@@ -95,6 +95,7 @@ func toMinerResponse(miner *Miner) *v1.MinerResponse {
 		CryptoInfo:   cryptoInfo,
 		CapacityInfo: capacityInfo,
 		UserID:       miner.UserID,
+		Address:      miner.Address.String,
 	}
 }
 
