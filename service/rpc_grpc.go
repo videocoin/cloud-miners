@@ -38,6 +38,12 @@ func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (
 		return nil, err
 	}
 
+	err = s.eb.EmitAssignMinerAddress(ctx, miner.UserID, miner.Address.String)
+	if err != nil {
+		logger.Errorf("failed to miner created: %s", err)
+		return nil, err
+	}
+
 	logger.Infof("miner status is %s", miner.Status.String())
 
 	if miner.Status == v1.MinerStatusIdle || miner.Status == v1.MinerStatusBusy {

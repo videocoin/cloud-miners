@@ -5,10 +5,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
+	"github.com/videocoin/cloud-miners/eventbus"
 	"github.com/videocoin/cloud-pkg/grpcutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
-	"google.golang.org/grpc/health/grpc_health_v1"
+	healthv1 "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -26,26 +27,30 @@ type RPCServer struct {
 	listen net.Listener
 	logger *logrus.Entry
 	ds     *Datastore
+	eb     *eventbus.EventBus
 
 	authTokenSecret string
 }
 
-func NewRPCServer(opts *RPCServerOptions, ds *Datastore) (*RPCServer, error) {
+func NewRPCServer(opts *RPCServerOptions, ds *Datastore, eb *eventbus.EventBus) (*RPCServer, error) {
 	grpcOpts := grpcutil.DefaultServerOpts(opts.Logger)
 	grpcServer := grpc.NewServer(grpcOpts...)
+
 	healthService := health.NewServer()
-	grpc_health_v1.RegisterHealthServer(grpcServer, healthService)
+	healthv1.RegisterHealthServer(grpcServer, healthService)
+
 	listen, err := net.Listen("tcp", opts.Addr)
 	if err != nil {
 		return nil, err
 	}
 
 	rpcServer := &RPCServer{
+		logger:          opts.Logger,
 		addr:            opts.Addr,
 		grpc:            grpcServer,
 		listen:          listen,
-		logger:          opts.Logger,
 		ds:              ds,
+		eb:              eb,
 		authTokenSecret: opts.AuthTokenSecret,
 	}
 

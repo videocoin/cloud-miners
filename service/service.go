@@ -36,7 +36,7 @@ func NewService(cfg *Config) (*Service, error) {
 		return nil, err
 	}
 
-	rpc, err := NewRPCServer(rpcConfig, ds)
+	rpc, err := NewRPCServer(rpcConfig, ds, eb)
 	if err != nil {
 		return nil, err
 	}

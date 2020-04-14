@@ -7,7 +7,8 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
-	v1 "github.com/videocoin/cloud-api/dispatcher/v1"
+	dispatcherv1 "github.com/videocoin/cloud-api/dispatcher/v1"
+	v1 "github.com/videocoin/cloud-api/miners/v1"
 	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
 	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
 	"github.com/videocoin/cloud-pkg/mqmux"
@@ -50,6 +51,11 @@ func (e *EventBus) Start() error {
 		return err
 	}
 
+	err = e.mq.Publisher("miners.events")
+	if err != nil {
+		return err
+	}
+
 	return e.mq.Run()
 }
 
@@ -86,7 +92,36 @@ func (e *EventBus) EmitUpdateStreamStatus(ctx context.Context, id string, status
 	return nil
 }
 
-func (e *EventBus) EmitUpdateTaskStatus(ctx context.Context, id string, status v1.TaskStatus) error {
+func (e *EventBus) EmitUpdateTaskStatus(ctx context.Context, id string, status dispatcherv1.TaskStatus) error {
+	headers := make(amqp.Table)
+
+	span := opentracing.SpanFromContext(ctx)
+	if span != nil {
+		ext.SpanKindRPCServer.Set(span)
+		ext.Component.Set(span, "miners")
+		err := span.Tracer().Inject(
+			span.Context(),
+			opentracing.TextMap,
+			mqmux.RMQHeaderCarrier(headers),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	event := &dispatcherv1.Event{
+		Type:   dispatcherv1.EventTypeUpdateStatus,
+		TaskID: id,
+		Status: status,
+	}
+	err := e.mq.PublishX("tasks.events", event, headers)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *EventBus) EmitAssignMinerAddress(ctx context.Context, userID, address string) error {
 	headers := make(amqp.Table)
 
 	span := opentracing.SpanFromContext(ctx)
@@ -104,11 +139,11 @@ func (e *EventBus) EmitUpdateTaskStatus(ctx context.Context, id string, status v
 	}
 
 	event := &v1.Event{
-		Type:   v1.EventTypeUpdateStatus,
-		TaskID: id,
-		Status: status,
+		Type:    v1.EventTypeAssignMinerAddress,
+		UserID:  userID,
+		Address: address,
 	}
-	err := e.mq.PublishX("tasks.events", event, headers)
+	err := e.mq.PublishX("miners.events", event, headers)
 	if err != nil {
 		return err
 	}
