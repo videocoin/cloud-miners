@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/mailru/dbr"
+	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 )
 
@@ -49,27 +49,6 @@ func (info *Info) Scan(src interface{}) error {
 	return json.Unmarshal(source, info)
 }
 
-type PBInfo map[string]interface{}
-
-func (info PBInfo) Value() (driver.Value, error) {
-	m := &runtime.JSONPb{OrigName: true, EmitDefaults: true, EnumsAsInts: false}
-	b, err := m.Marshal(info)
-	if err != nil {
-		return nil, err
-	}
-	return string(b), nil
-}
-
-func (info *PBInfo) Scan(src interface{}) error {
-	m := &runtime.JSONPb{OrigName: true, EmitDefaults: true, EnumsAsInts: false}
-	source, ok := src.([]byte)
-	if !ok {
-		return errors.New("type assertion .([]byte) failed")
-	}
-
-	return m.Unmarshal(source, info)
-}
-
 type Miner struct {
 	ID            string         `gorm:"primary_key"`
 	UserID        string         `gorm:"type:varchar(36)"`
@@ -78,12 +57,12 @@ type Miner struct {
 	LastPingAt    *time.Time
 	CurrentTaskID dbr.NullString
 	Address       dbr.NullString
-	DeletedAt     *time.Time `gorm:"type:timestamp NULL;DEFAULT:null"`
-	Tags          Tags       `sql:"type:json"`
-	SystemInfo    Info       `sql:"type:json"`
-	CryptoInfo    Info       `sql:"type:json"`
-	CapacityInfo  Info       `sql:"type:json"`
-	WorkerInfo    PBInfo     `sql:"type:json"`
+	DeletedAt     *time.Time                `gorm:"type:timestamp NULL;DEFAULT:null"`
+	Tags          Tags                      `sql:"type:json"`
+	SystemInfo    Info                      `sql:"type:json"`
+	CryptoInfo    Info                      `sql:"type:json"`
+	CapacityInfo  Info                      `sql:"type:json"`
+	WorkerInfo    *emitterv1.WorkerResponse `sql:"type:json"`
 }
 
 func (m *Miner) IsOnline() bool {

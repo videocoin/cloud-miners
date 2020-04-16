@@ -57,6 +57,7 @@ func NewService(cfg *Config) (*Service, error) {
 		manager.WithLogger(cfg.Logger.WithField("system", "datamanager")),
 		manager.WithDatastore(ds),
 		manager.WithEventBus(eb),
+		manager.WithEmitterServiceClient(cfg.EmitterRPCAddr),
 	)
 	if err != nil {
 		return nil, err

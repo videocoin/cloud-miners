@@ -4,7 +4,9 @@ import (
 	"context"
 	"time"
 
+	prototypes "github.com/gogo/protobuf/types"
 	"github.com/sirupsen/logrus"
+	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
 	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
 	"github.com/videocoin/cloud-miners/datastore"
 	"github.com/videocoin/cloud-miners/eventbus"
@@ -12,10 +14,12 @@ import (
 
 type Manager struct {
 	logger         *logrus.Entry
-	ds             *datastore.Datastore
-	eb             *eventbus.EventBus
 	offlineTimeout time.Duration
 	offlineTicker  *time.Ticker
+	lwTicker       *time.Ticker
+	ds             *datastore.Datastore
+	eb             *eventbus.EventBus
+	emitter        emitterv1.EmitterServiceClient
 }
 
 func New(opts ...Option) (*Manager, error) {
@@ -23,6 +27,7 @@ func New(opts ...Option) (*Manager, error) {
 	ds := &Manager{
 		offlineTimeout: offlineTimeout,
 		offlineTicker:  time.NewTicker(offlineTimeout),
+		lwTicker:       time.NewTicker(time.Second * 10),
 	}
 	for _, o := range opts {
 		if err := o(ds); err != nil {
@@ -34,11 +39,13 @@ func New(opts ...Option) (*Manager, error) {
 }
 
 func (m *Manager) Start() {
-	go m.checkOfflineTask()
+	// go m.checkOfflineTask()
+	go m.listWorkersTask()
 }
 
 func (m *Manager) Stop() {
 	m.offlineTicker.Stop()
+	m.lwTicker.Stop()
 }
 
 func (m *Manager) checkOfflineTask() {
@@ -72,6 +79,35 @@ func (m *Manager) checkOfflineTask() {
 						}
 					}
 				}(miner)
+			}
+		}
+	}
+}
+
+func (m *Manager) listWorkersTask() {
+	for range m.lwTicker.C {
+		workers, err := m.emitter.ListWorkers(context.Background(), &prototypes.Empty{})
+		if err != nil {
+			m.logger.Infof("failed to list workers: %s", err)
+			continue
+		}
+
+		for _, worker := range workers.Items {
+			ctx := context.Background()
+			miner, err := m.ds.Miners.GetByAddress(ctx, worker.Address)
+			if err != nil {
+				m.logger.
+					WithField("address", worker.Address).
+					Warningf("failed to get worker by address: %s", err)
+				continue
+			}
+
+			err = m.ds.Miners.UpdateWorkerInfo(ctx, miner, worker)
+			if err != nil {
+				m.logger.
+					WithField("address", worker.Address).
+					Errorf("failed to update worker info: %s", err)
+				continue
 			}
 		}
 	}

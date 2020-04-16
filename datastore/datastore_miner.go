@@ -12,6 +12,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/mailru/dbr"
 	"github.com/opentracing/opentracing-go"
+	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 )
 
@@ -79,6 +80,26 @@ func (ds *MinerDatastore) Get(ctx context.Context, id string, userID string) (*M
 		}
 
 		return nil, fmt.Errorf("failed to get miner by id: %s", err.Error())
+	}
+
+	return miner, nil
+}
+
+func (ds *MinerDatastore) GetByAddress(ctx context.Context, address string) (*Miner, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetByAddress")
+	defer span.Finish()
+	span.SetTag("address", address)
+
+	miner := new(Miner)
+
+	qs := ds.db.Where("address = ?", address)
+
+	if err := qs.First(&miner).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, ErrMinerNotFound
+		}
+
+		return nil, fmt.Errorf("failed to get miner by address: %s", err.Error())
 	}
 
 	return miner, nil
@@ -253,7 +274,7 @@ func (ds *MinerDatastore) UpdateCapacityInfo(ctx context.Context, miner *Miner, 
 	return nil
 }
 
-func (ds *MinerDatastore) UpdateWorkerInfo(ctx context.Context, miner *Miner, workerInfo PBInfo) error {
+func (ds *MinerDatastore) UpdateWorkerInfo(ctx context.Context, miner *Miner, workerInfo *emitterv1.WorkerResponse) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateWorkerInfo")
 	defer span.Finish()
 

@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package cloud.api.emitter.v1;
+
+import "google/protobuf/empty.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "v1";
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.goproto_registration) = true;
+option (gogoproto.messagename_all) = true;
+
+service EmitterService {
+    rpc InitStream(InitStreamRequest) returns (google.protobuf.Empty) {}
+    rpc EndStream(EndStreamRequest) returns (google.protobuf.Empty) {}
+    rpc AddInputChunk(AddInputChunkRequest) returns (google.protobuf.Empty) {}
+    rpc GetBalance(BalanceRequest) returns (BalanceResponse) {}
+    rpc Deposit(DepositRequest) returns (DepositResponse) {}
+    rpc ValidateProof(ValidateProofRequest) returns (ValidateProofResponse) {}
+    rpc ScrapProof(ScrapProofRequest) returns (ScrapProofResponse) {}
+    rpc ListWorkers(google.protobuf.Empty) returns (ListWorkersResponse) {}
+}
+
+message Tx {
+    bytes hash = 1;
+}
+
+message InitStreamRequest {
+    string stream_id = 1;
+    string user_id = 2;
+    uint64 stream_contract_id = 3;
+    repeated string profiles_ids = 4;
+}
+
+message EndStreamRequest {
+    string stream_id = 1;
+    string user_id = 2;
+    uint64 stream_contract_id = 3;
+    string stream_contract_address = 4;
+}
+
+message AddInputChunkRequest {
+    uint64 stream_contract_id = 1;
+    uint64 chunk_id = 2;
+    double reward = 4;
+}
+
+message BalanceRequest {
+    bytes address = 1;
+}
+
+message BalanceResponse {
+    bytes address = 1;
+    bytes value = 2;
+}
+
+message DepositRequest {
+    string user_id = 1;
+    string stream_id = 2;
+    bytes to = 3;
+    bytes value = 4;
+}
+
+message DepositResponse {
+    bytes tx_id = 1;
+}
+
+message ValidateProofRequest {
+    string stream_contract_address = 1;
+    bytes profile_id = 2;
+    bytes chunk_id = 3;
+}
+
+message ValidateProofResponse {
+    bytes tx_id = 1;
+}
+
+message ScrapProofRequest {
+    string stream_contract_address = 1;
+    bytes profile_id = 2;
+    bytes chunk_id = 3;
+}
+
+message ScrapProofResponse {
+    bytes tx_id = 1;
+}
+
+enum WorkerState {
+    option (gogoproto.goproto_enum_prefix) = false;
+    option (gogoproto.enum_customname) = "WorkerState";
+
+    BONDING   = 0 [(gogoproto.enumvalue_customname) = "WorkerStateBonding"];
+    BONDED    = 1 [(gogoproto.enumvalue_customname) = "WorkerStateBonded"];
+    UNBONDED  = 2 [(gogoproto.enumvalue_customname) = "WorkerStateUnbonded"];
+    UNBONDING = 3 [(gogoproto.enumvalue_customname) = "WorkerStateUnbonding"];
+}
+
+message WorkerResponse {
+    string address = 1;
+    WorkerState state = 2;
+    string total_stake = 3;
+    string self_stake = 4;
+    string delegated_stake = 5;
+    google.protobuf.Timestamp registered_at = 6 [(gogoproto.stdtime) = true];
+}
+
+message ListWorkersResponse {
+    repeated WorkerResponse items = 1;
+}
