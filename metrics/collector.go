@@ -1,53 +1,32 @@
-package service
+package metrics
 
 import (
 	"sync"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
+	"github.com/videocoin/cloud-miners/datastore"
 	"golang.org/x/net/context"
 )
 
-type Metrics struct {
-	internalMinerStatus *prometheus.GaugeVec
-}
-
-func NewMetrics(namespace string) *Metrics {
-	return &Metrics{
-		internalMinerStatus: prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Name:      "internal_miner_status",
-				Help:      "Status of internal miner",
-			},
-			[]string{"status", "hostname"},
-		),
-	}
-}
-
-func (m *Metrics) RegisterAll() {
-	prometheus.MustRegister(m.internalMinerStatus)
-}
-
-type MetricsCollector struct {
+type Collector struct {
 	mutex   sync.RWMutex
 	metrics *Metrics
-	ds      *Datastore
+	ds      *datastore.Datastore
 	ticker  *time.Ticker
 }
 
-func NewMetricsCollector(namespace string, ds *Datastore) *MetricsCollector {
+func NewCollector(namespace string, ds *datastore.Datastore) *Collector {
 	metrics := NewMetrics(namespace)
 	metrics.RegisterAll()
-	return &MetricsCollector{
+	return &Collector{
 		metrics: metrics,
 		ds:      ds,
 		ticker:  time.NewTicker(time.Second * 5),
 	}
 }
 
-func (mc *MetricsCollector) Collect() {
+func (mc *Collector) Collect() {
 	for range mc.ticker.C {
 		mc.mutex.Lock()
 		mc.collectMetrics()
@@ -55,7 +34,7 @@ func (mc *MetricsCollector) Collect() {
 	}
 }
 
-func (mc *MetricsCollector) collectMetrics() {
+func (mc *Collector) collectMetrics() {
 	statuses := []string{
 		v1.MinerStatusNew.String(),
 		v1.MinerStatusIdle.String(),
@@ -85,11 +64,11 @@ func (mc *MetricsCollector) collectMetrics() {
 	}
 }
 
-func (mc *MetricsCollector) Start() {
+func (mc *Collector) Start() {
 	go mc.Collect()
 }
 
-func (mc *MetricsCollector) Stop() error {
+func (mc *Collector) Stop() error {
 	mc.ticker.Stop()
 	return nil
 }

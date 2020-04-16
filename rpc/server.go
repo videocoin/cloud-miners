@@ -1,10 +1,11 @@
-package service
+package rpc
 
 import (
 	"net"
 
 	"github.com/sirupsen/logrus"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
+	"github.com/videocoin/cloud-miners/datastore"
 	"github.com/videocoin/cloud-miners/eventbus"
 	"github.com/videocoin/cloud-pkg/grpcutil"
 	"google.golang.org/grpc"
@@ -13,7 +14,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-type RPCServerOptions struct {
+type ServerOption struct {
 	Addr            string
 	DBURI           string
 	AuthTokenSecret string
@@ -21,18 +22,18 @@ type RPCServerOptions struct {
 	Logger *logrus.Entry
 }
 
-type RPCServer struct {
+type Server struct {
 	addr   string
 	grpc   *grpc.Server
 	listen net.Listener
 	logger *logrus.Entry
-	ds     *Datastore
+	ds     *datastore.Datastore
 	eb     *eventbus.EventBus
 
 	authTokenSecret string
 }
 
-func NewRPCServer(opts *RPCServerOptions, ds *Datastore, eb *eventbus.EventBus) (*RPCServer, error) {
+func NewServer(opts *ServerOption, ds *datastore.Datastore, eb *eventbus.EventBus) (*Server, error) {
 	grpcOpts := grpcutil.DefaultServerOpts(opts.Logger)
 	grpcServer := grpc.NewServer(grpcOpts...)
 
@@ -44,7 +45,7 @@ func NewRPCServer(opts *RPCServerOptions, ds *Datastore, eb *eventbus.EventBus) 
 		return nil, err
 	}
 
-	rpcServer := &RPCServer{
+	rpcServer := &Server{
 		logger:          opts.Logger,
 		addr:            opts.Addr,
 		grpc:            grpcServer,
@@ -60,7 +61,7 @@ func NewRPCServer(opts *RPCServerOptions, ds *Datastore, eb *eventbus.EventBus) 
 	return rpcServer, nil
 }
 
-func (s *RPCServer) Start() error {
+func (s *Server) Start() error {
 	s.logger.Infof("starting rpc server on %s", s.addr)
 	return s.grpc.Serve(s.listen)
 }

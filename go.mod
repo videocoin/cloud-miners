@@ -30,6 +30,7 @@ require (
 	go4.org v0.0.0-20200312051459-7028f7b4a332 // indirect
 	golang.org/x/net v0.0.0-20200222125558-5a598a2470a0
 	google.golang.org/grpc v1.27.1
+	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 )
 
 replace github.com/videocoin/cloud-api => ../cloud-api

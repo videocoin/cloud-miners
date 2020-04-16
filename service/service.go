@@ -1,24 +1,27 @@
 package service
 
 import (
+	"github.com/videocoin/cloud-miners/datastore"
 	"github.com/videocoin/cloud-miners/eventbus"
+	"github.com/videocoin/cloud-miners/metrics"
+	"github.com/videocoin/cloud-miners/rpc"
 )
 
 type Service struct {
 	cfg *Config
-	rpc *RPCServer
-	ds  *Datastore
+	rpc *rpc.Server
+	ds  *datastore.Datastore
 	eb  *eventbus.EventBus
-	mc  *MetricsCollector
-	ms  *MetricsServer
+	mc  *metrics.Collector
+	ms  *metrics.Server
 }
 
 func NewService(cfg *Config) (*Service, error) {
-	rpcConfig := &RPCServerOptions{
+	rpcConfig := &rpc.ServerOption{
+		Logger:          cfg.Logger,
 		Addr:            cfg.Addr,
 		DBURI:           cfg.DBURI,
 		AuthTokenSecret: cfg.AuthTokenSecret,
-		Logger:          cfg.Logger,
 	}
 
 	ebConfig := &eventbus.Config{
@@ -31,30 +34,30 @@ func NewService(cfg *Config) (*Service, error) {
 		return nil, err
 	}
 
-	ds, err := NewDatastore(cfg.DBURI, eb, cfg.Logger.WithField("system", "datastore"))
+	ds, err := datastore.NewDatastore(cfg.DBURI, eb, cfg.Logger.WithField("system", "datastore"))
 	if err != nil {
 		return nil, err
 	}
 
-	rpc, err := NewRPCServer(rpcConfig, ds, eb)
+	rpc, err := rpc.NewServer(rpcConfig, ds, eb)
 	if err != nil {
 		return nil, err
 	}
 
-	metricsServer, err := NewMetricsServer(cfg.MetricsAddr, cfg.Logger.WithField("system", "metrics-server"))
+	ms, err := metrics.NewServer(cfg.MetricsAddr, cfg.Logger.WithField("system", "metrics-server"))
 	if err != nil {
 		return nil, err
 	}
 
-	metricsCollector := NewMetricsCollector(cfg.Name, ds)
+	mc := metrics.NewCollector(cfg.Name, ds)
 
 	svc := &Service{
 		cfg: cfg,
 		rpc: rpc,
 		ds:  ds,
 		eb:  eb,
-		mc:  metricsCollector,
-		ms:  metricsServer,
+		mc:  mc,
+		ms:  ms,
 	}
 
 	return svc, nil

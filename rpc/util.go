@@ -1,9 +1,11 @@
-package service
+package rpc
 
 import (
 	"context"
 	"math"
 	"math/big"
+
+	"github.com/videocoin/cloud-miners/datastore"
 
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
@@ -13,7 +15,7 @@ import (
 	"github.com/videocoin/cloud-pkg/ethutils"
 )
 
-func (s *RPCServer) authenticate(ctx context.Context) (string, error) {
+func (s *Server) authenticate(ctx context.Context) (string, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "authenticate")
 	defer span.Finish()
 
@@ -35,7 +37,7 @@ func (s *RPCServer) authenticate(ctx context.Context) (string, error) {
 	return userID, nil
 }
 
-func (s *RPCServer) getTokenType(ctx context.Context) auth.TokenType {
+func (s *Server) getTokenType(ctx context.Context) auth.TokenType {
 	tokenType, ok := auth.TypeFromContext(ctx)
 	if !ok {
 		return auth.TokenType(usersv1.TokenTypeRegular)
@@ -44,7 +46,7 @@ func (s *RPCServer) getTokenType(ctx context.Context) auth.TokenType {
 	return tokenType
 }
 
-func toMinerResponse(miner *Miner) *v1.MinerResponse {
+func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 	systemInfo := &v1.SystemInfo{}
 
 	if cpuInfo, ok := miner.SystemInfo["cpu"]; ok {

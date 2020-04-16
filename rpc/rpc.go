@@ -1,4 +1,4 @@
-package service
+package rpc
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1.MinerResponse, error) {
+func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Register")
 	defer span.Finish()
 
@@ -73,7 +73,7 @@ func (s *RPCServer) Register(ctx context.Context, req *v1.RegistrationRequest) (
 	return resp, nil
 }
 
-func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResponse, error) {
+func (s *Server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Ping")
 	defer span.Finish()
 
@@ -145,7 +145,7 @@ func (s *RPCServer) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResp
 	return &v1.PingResponse{}, nil
 }
 
-func (s *RPCServer) GetForceTaskList(ctx context.Context, req *protoempty.Empty) (*v1.ForceTaskListResponse, error) {
+func (s *Server) GetForceTaskList(ctx context.Context, req *protoempty.Empty) (*v1.ForceTaskListResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "GetForceTaskList")
 	defer span.Finish()
 
@@ -161,7 +161,7 @@ func (s *RPCServer) GetForceTaskList(ctx context.Context, req *protoempty.Empty)
 	return resp, nil
 }
 
-func (s *RPCServer) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
+func (s *Server) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "GetByID")
 	defer span.Finish()
 
@@ -191,7 +191,7 @@ func (s *RPCServer) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.Mine
 	return resp, nil
 }
 
-func (s *RPCServer) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (*protoempty.Empty, error) {
+func (s *Server) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (*protoempty.Empty, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "AssignTask")
 	defer span.Finish()
 
@@ -211,7 +211,7 @@ func (s *RPCServer) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (
 	return &protoempty.Empty{}, nil
 }
 
-func (s *RPCServer) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest) (*protoempty.Empty, error) {
+func (s *Server) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest) (*protoempty.Empty, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UnassignTask")
 	defer span.Finish()
 
@@ -247,7 +247,7 @@ func (s *RPCServer) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest)
 	return &protoempty.Empty{}, nil
 }
 
-func (s *RPCServer) GetMinersWithForceTask(ctx context.Context, req *protoempty.Empty) (*v1.MinersWithForceTaskResponse, error) {
+func (s *Server) GetMinersWithForceTask(ctx context.Context, req *protoempty.Empty) (*v1.MinersWithForceTaskResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "GetMinersWithForceTask")
 	defer span.Finish()
 
@@ -274,7 +274,7 @@ func (s *RPCServer) GetMinersWithForceTask(ctx context.Context, req *protoempty.
 	return resp, nil
 }
 
-func (s *RPCServer) GetMinersCandidates(ctx context.Context, req *v1.MinersCandidatesRequest) (*v1.MinersCandidatesResponse, error) {
+func (s *Server) GetMinersCandidates(ctx context.Context, req *v1.MinersCandidatesRequest) (*v1.MinersCandidatesResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "GetMinersCandidates")
 	defer span.Finish()
 

@@ -1,4 +1,4 @@
-package service
+package metrics
 
 import (
 	"github.com/labstack/echo"
@@ -6,39 +6,39 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type MetricsServerConfig struct {
+type ServerConfig struct {
 	Addr string
 }
 
-type MetricsServer struct {
+type Server struct {
 	logger *logrus.Entry
 	addr   string
 	e      *echo.Echo
 }
 
-func NewMetricsServer(addr string, logger *logrus.Entry) (*MetricsServer, error) {
+func NewServer(addr string, logger *logrus.Entry) (*Server, error) {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
 	e.DisableHTTP2 = true
 
-	return &MetricsServer{
+	return &Server{
 		logger: logger,
 		addr:   addr,
 		e:      e,
 	}, nil
 }
 
-func (s *MetricsServer) Start() error {
+func (s *Server) Start() error {
 	s.logger.Infof("metrics server listening on %s", s.addr)
 	s.routes()
 	return s.e.Start(s.addr)
 }
 
-func (s *MetricsServer) Stop() error {
+func (s *Server) Stop() error {
 	return nil
 }
 
-func (s *MetricsServer) routes() {
+func (s *Server) routes() {
 	s.e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 }

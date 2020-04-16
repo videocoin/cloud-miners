@@ -1,4 +1,4 @@
-package service
+package rpc
 
 import (
 	"context"
@@ -8,9 +8,10 @@ import (
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
+	"github.com/videocoin/cloud-miners/datastore"
 )
 
-func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerResponse, error) {
+func (s *Server) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Create")
 	defer span.Finish()
 
@@ -29,7 +30,7 @@ func (s *RPCServer) Create(ctx context.Context, req *protoempty.Empty) (*v1.Mine
 	return toMinerResponse(miner), nil
 }
 
-func (s *RPCServer) List(ctx context.Context, req *v1.MinerRequest) (*v1.MinerListResponse, error) {
+func (s *Server) List(ctx context.Context, req *v1.MinerRequest) (*v1.MinerListResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "List")
 	defer span.Finish()
 
@@ -53,7 +54,7 @@ func (s *RPCServer) List(ctx context.Context, req *v1.MinerRequest) (*v1.MinerLi
 	return resp, nil
 }
 
-func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
+func (s *Server) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Get")
 	defer span.Finish()
 
@@ -67,7 +68,7 @@ func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRes
 
 	miner, err := s.ds.Miners.Get(ctx, req.Id, userID)
 	if err != nil {
-		if err == ErrMinerNotFound {
+		if err == datastore.ErrMinerNotFound {
 			return nil, rpc.ErrRpcNotFound
 		}
 		return nil, err
@@ -76,7 +77,7 @@ func (s *RPCServer) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRes
 	return toMinerResponse(miner), nil
 }
 
-func (s *RPCServer) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1.MinerResponse, error) {
+func (s *Server) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Update")
 	defer span.Finish()
 
@@ -94,7 +95,7 @@ func (s *RPCServer) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1
 
 	miner, err := s.ds.Miners.Get(ctx, req.Id, userID)
 	if err != nil {
-		if err == ErrMinerNotFound {
+		if err == datastore.ErrMinerNotFound {
 			return nil, rpc.ErrRpcNotFound
 		}
 		return nil, err
@@ -107,7 +108,7 @@ func (s *RPCServer) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1
 	return toMinerResponse(miner), nil
 }
 
-func (s *RPCServer) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
+func (s *Server) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Delete")
 	defer span.Finish()
 
@@ -121,7 +122,7 @@ func (s *RPCServer) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.Miner
 
 	miner, err := s.ds.Miners.Get(ctx, req.Id, userID)
 	if err != nil {
-		if err == ErrMinerNotFound {
+		if err == datastore.ErrMinerNotFound {
 			return nil, rpc.ErrRpcNotFound
 		}
 		return nil, err
@@ -138,7 +139,7 @@ func (s *RPCServer) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.Miner
 	return toMinerResponse(miner), nil
 }
 
-func (s *RPCServer) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.MinerResponse, error) {
+func (s *Server) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.MinerResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "SetTags")
 	defer span.Finish()
 
@@ -152,7 +153,7 @@ func (s *RPCServer) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.Mi
 
 	miner, err := s.ds.Miners.Get(ctx, req.Id, "")
 	if err != nil {
-		if err == ErrMinerNotFound {
+		if err == datastore.ErrMinerNotFound {
 			return nil, rpc.ErrRpcNotFound
 		}
 
@@ -169,7 +170,7 @@ func (s *RPCServer) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.Mi
 	return toMinerResponse(miner), nil
 }
 
-func (s *RPCServer) All(ctx context.Context, req *protoempty.Empty) (*v1.MinerListResponse, error) {
+func (s *Server) All(ctx context.Context, req *protoempty.Empty) (*v1.MinerListResponse, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "List")
 	defer span.Finish()
 
