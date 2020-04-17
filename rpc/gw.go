@@ -12,12 +12,8 @@ import (
 )
 
 func (s *Server) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "Create")
-	defer span.Finish()
-
 	userID, err := s.authenticate(ctx)
 	if err != nil {
-		s.logger.Error(err)
 		return nil, err
 	}
 
@@ -31,12 +27,8 @@ func (s *Server) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerRe
 }
 
 func (s *Server) List(ctx context.Context, req *v1.MinerRequest) (*v1.MinerListResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "List")
-	defer span.Finish()
-
 	userID, err := s.authenticate(ctx)
 	if err != nil {
-		s.logger.Error(err)
 		return nil, err
 	}
 
@@ -55,14 +47,11 @@ func (s *Server) List(ctx context.Context, req *v1.MinerRequest) (*v1.MinerListR
 }
 
 func (s *Server) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "Get")
-	defer span.Finish()
-
+	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("id", req.Id)
 
 	userID, err := s.authenticate(ctx)
 	if err != nil {
-		s.logger.Error(err)
 		return nil, err
 	}
 
@@ -78,14 +67,12 @@ func (s *Server) Get(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRespon
 }
 
 func (s *Server) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1.MinerResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "Update")
-	defer span.Finish()
-
+	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("id", req.Id)
+	span.SetTag("name", req.Name)
 
 	userID, err := s.authenticate(ctx)
 	if err != nil {
-		s.logger.Error(err)
 		return nil, err
 	}
 
@@ -109,14 +96,11 @@ func (s *Server) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1.Mi
 }
 
 func (s *Server) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "Delete")
-	defer span.Finish()
-
+	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("id", req.Id)
 
 	userID, err := s.authenticate(ctx)
 	if err != nil {
-		s.logger.Error(err)
 		return nil, err
 	}
 
@@ -140,14 +124,12 @@ func (s *Server) Delete(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRes
 }
 
 func (s *Server) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.MinerResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "SetTags")
-	defer span.Finish()
-
+	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("id", req.Id)
+	span.SetTag("tags", req.Tags)
 
 	_, err := s.authenticate(ctx)
 	if err != nil {
-		s.logger.Error(err)
 		return nil, err
 	}
 
@@ -171,9 +153,6 @@ func (s *Server) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.Miner
 }
 
 func (s *Server) All(ctx context.Context, req *protoempty.Empty) (*v1.MinerListResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "List")
-	defer span.Finish()
-
 	resp := &v1.MinerListResponse{Items: []*v1.MinerResponse{}}
 
 	miners, err := s.ds.Miners.List(ctx, nil)

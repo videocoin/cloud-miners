@@ -5,18 +5,17 @@ import (
 	"math"
 	"math/big"
 
-	"github.com/videocoin/cloud-miners/datastore"
-
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
+	"github.com/videocoin/cloud-miners/datastore"
 	"github.com/videocoin/cloud-pkg/auth"
 	"github.com/videocoin/cloud-pkg/ethutils"
 )
 
 func (s *Server) authenticate(ctx context.Context) (string, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "authenticate")
+	span, _ := opentracing.StartSpanFromContext(ctx, "rpc.authenticate")
 	defer span.Finish()
 
 	ctx = auth.NewContextWithSecretKey(ctx, s.authTokenSecret)

@@ -13,9 +13,7 @@ import (
 )
 
 func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1.MinerResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "Register")
-	defer span.Finish()
-
+	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("client_id", req.ClientID)
 	span.SetTag("address", req.Address)
 
@@ -74,9 +72,7 @@ func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1
 }
 
 func (s *Server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "Ping")
-	defer span.Finish()
-
+	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("client_id", req.ClientID)
 
 	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
@@ -146,25 +142,16 @@ func (s *Server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingRespons
 }
 
 func (s *Server) GetForceTaskList(ctx context.Context, req *protoempty.Empty) (*v1.ForceTaskListResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "GetForceTaskList")
-	defer span.Finish()
-
-	resp := &v1.ForceTaskListResponse{}
-
 	ids, err := s.ds.Miners.GetForceTaskIDs(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Ids = ids
-
-	return resp, nil
+	return &v1.ForceTaskListResponse{Ids: ids}, nil
 }
 
 func (s *Server) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "GetByID")
-	defer span.Finish()
-
+	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("id", req.Id)
 
 	resp := &v1.MinerResponse{}
@@ -192,9 +179,7 @@ func (s *Server) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRe
 }
 
 func (s *Server) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (*protoempty.Empty, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "AssignTask")
-	defer span.Finish()
-
+	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("client_id", req.ClientID)
 
 	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
@@ -212,9 +197,7 @@ func (s *Server) AssignTask(ctx context.Context, req *v1.AssignTaskRequest) (*pr
 }
 
 func (s *Server) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest) (*protoempty.Empty, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "UnassignTask")
-	defer span.Finish()
-
+	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("client_id", req.ClientID)
 
 	if req.ClientID != "" {
@@ -248,9 +231,6 @@ func (s *Server) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest) (*
 }
 
 func (s *Server) GetMinersWithForceTask(ctx context.Context, req *protoempty.Empty) (*v1.MinersWithForceTaskResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "GetMinersWithForceTask")
-	defer span.Finish()
-
 	resp := &v1.MinersWithForceTaskResponse{
 		Items: []*v1.MinerWithForceTaskResponse{},
 	}
@@ -275,8 +255,9 @@ func (s *Server) GetMinersWithForceTask(ctx context.Context, req *protoempty.Emp
 }
 
 func (s *Server) GetMinersCandidates(ctx context.Context, req *v1.MinersCandidatesRequest) (*v1.MinersCandidatesResponse, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "GetMinersCandidates")
-	defer span.Finish()
+	span := opentracing.SpanFromContext(ctx)
+	span.SetTag("encode_capacity", req.EncodeCapacity)
+	span.SetTag("cpu_capacity", req.CpuCapacity)
 
 	miners, err := s.ds.Miners.ListCandidates(ctx, req.EncodeCapacity, req.CpuCapacity)
 	if err != nil {
