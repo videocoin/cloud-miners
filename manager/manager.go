@@ -39,7 +39,7 @@ func New(opts ...Option) (*Manager, error) {
 }
 
 func (m *Manager) Start() {
-	// go m.checkOfflineTask()
+	go m.checkOfflineTask()
 	go m.listWorkersTask()
 }
 
