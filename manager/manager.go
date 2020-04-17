@@ -94,7 +94,8 @@ func (m *Manager) listWorkersTask() {
 
 		for _, worker := range workers.Items {
 			ctx := context.Background()
-			miner, err := m.ds.Miners.GetByAddress(ctx, worker.Address)
+
+			_, err := m.ds.Miners.GetByAddress(ctx, worker.Address)
 			if err != nil {
 				m.logger.
 					WithField("address", worker.Address).
@@ -102,7 +103,7 @@ func (m *Manager) listWorkersTask() {
 				continue
 			}
 
-			err = m.ds.Miners.UpdateWorkerInfo(ctx, miner, worker)
+			err = m.ds.Miners.UpdateWorkerInfoByAddress(ctx, worker.Address, worker)
 			if err != nil {
 				m.logger.
 					WithField("address", worker.Address).

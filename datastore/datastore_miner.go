@@ -275,14 +275,13 @@ func (ds *MinerDatastore) UpdateCapacityInfo(ctx context.Context, miner *Miner, 
 	return nil
 }
 
-func (ds *MinerDatastore) UpdateWorkerInfo(ctx context.Context, miner *Miner, workerInfo *emitterv1.WorkerResponse) error {
+func (ds *MinerDatastore) UpdateWorkerInfoByAddress(ctx context.Context, address string, workerInfo *emitterv1.WorkerResponse) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateWorkerInfo")
 	defer span.Finish()
 
 	tx := ds.db.Begin()
 
-	miner.WorkerInfo = workerInfo
-	err := ds.db.Model(&miner).UpdateColumn("worker_info", miner.WorkerInfo).Error
+	err := ds.db.Model(Miner{}).Where("address = ?", address).UpdateColumn("worker_info", workerInfo).Error
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to update worker_info: %s", err)
