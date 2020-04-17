@@ -8,6 +8,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
+	"github.com/videocoin/cloud-api/rpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -154,20 +155,19 @@ func (s *Server) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRe
 	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("id", req.Id)
 
-	resp := &v1.MinerResponse{}
-
 	miner, err := s.ds.Miners.Get(ctx, req.Id, "")
 	if err != nil {
-		s.logger.Errorf("failed to get miner: %s", err)
-		return nil, err
+		return nil, rpc.NewRpcInternalError(err)
 	}
 
-	resp.Id = miner.ID
-	resp.Status = miner.Status
-	resp.Tags = miner.Tags
-	resp.Name = miner.Name
-	resp.SystemInfo = &v1.SystemInfo{}
-	resp.UserID = miner.UserID
+	resp := &v1.MinerResponse{
+		Id:         miner.ID,
+		Status:     miner.Status,
+		Tags:       miner.Tags,
+		Name:       miner.Name,
+		SystemInfo: &v1.SystemInfo{},
+		UserID:     miner.UserID,
+	}
 
 	if miner.SystemInfo != nil {
 		if hw, ok := miner.SystemInfo["hw"]; ok {

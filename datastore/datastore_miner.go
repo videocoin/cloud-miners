@@ -62,10 +62,11 @@ func (ds *MinerDatastore) Create(ctx context.Context, userID string) (*Miner, er
 }
 
 func (ds *MinerDatastore) Get(ctx context.Context, id string, userID string) (*Miner, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "Get")
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.Get")
 	defer span.Finish()
 
 	span.SetTag("id", id)
+	span.SetTag("user_id", userID)
 
 	miner := new(Miner)
 
