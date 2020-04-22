@@ -40,7 +40,7 @@ func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1
 
 	err = s.eb.EmitAssignMinerAddress(ctx, miner.UserID, miner.Address.String)
 	if err != nil {
-		logger.Errorf("failed to miner created: %s", err)
+		logger.Errorf("failed to emit assign miner address: %s", err)
 		return nil, err
 	}
 
@@ -115,16 +115,6 @@ func (s *Server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingRespons
 			}
 			if err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo); err != nil {
 				logger.Errorf("failed to update system info: %s", err)
-			}
-		}
-
-		if req.CryptoInfo != nil && len(req.CryptoInfo) > 0 {
-			cryptoInfo := map[string]interface{}{}
-			if err := json.Unmarshal(req.CryptoInfo, &cryptoInfo); err != nil {
-				logger.Errorf("failed to unmarshal crypto info: %s", err)
-			}
-			if err := s.ds.Miners.UpdateCryptoInfo(ctx, miner, cryptoInfo); err != nil {
-				logger.Errorf("failed to update crypto info: %s", err)
 			}
 		}
 
@@ -281,4 +271,21 @@ func (s *Server) GetMinersCandidates(ctx context.Context, req *v1.MinersCandidat
 	}
 
 	return resp, nil
+}
+
+func (s *Server) GetKey(ctx context.Context, req *v1.KeyRequest) (*v1.KeyResponse, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetKey")
+	defer span.Finish()
+
+	span.SetTag("id", req.ClientID)
+
+	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
+	if err != nil {
+		s.logger.Errorf("failed to get miner: %s", err)
+		return nil, err
+	}
+
+	return &v1.KeyResponse{
+		Key: miner.AccessKey,
+	}, nil
 }

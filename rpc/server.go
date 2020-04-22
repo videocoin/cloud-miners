@@ -16,6 +16,7 @@ import (
 
 type ServerOption struct {
 	Addr            string
+	IamEndpoint     string
 	DBURI           string
 	AuthTokenSecret string
 
@@ -23,13 +24,13 @@ type ServerOption struct {
 }
 
 type Server struct {
-	addr   string
-	grpc   *grpc.Server
-	listen net.Listener
-	logger *logrus.Entry
-	ds     *datastore.Datastore
-	eb     *eventbus.EventBus
-
+	addr            string
+	iamEndpoint     string
+	grpc            *grpc.Server
+	listen          net.Listener
+	logger          *logrus.Entry
+	ds              *datastore.Datastore
+	eb              *eventbus.EventBus
 	authTokenSecret string
 }
 
@@ -48,6 +49,7 @@ func NewServer(opts *ServerOption, ds *datastore.Datastore, eb *eventbus.EventBu
 	rpcServer := &Server{
 		logger:          opts.Logger,
 		addr:            opts.Addr,
+		iamEndpoint:     opts.IamEndpoint,
 		grpc:            grpcServer,
 		listen:          listen,
 		ds:              ds,

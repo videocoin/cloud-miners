@@ -29,7 +29,7 @@ func NewMinerDatastore(db *gorm.DB) (*MinerDatastore, error) {
 	return &MinerDatastore{db: db}, nil
 }
 
-func (ds *MinerDatastore) Create(ctx context.Context, userID string) (*Miner, error) {
+func (ds *MinerDatastore) Create(ctx context.Context, userID, accessKey string) (*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Create")
 	defer span.Finish()
 
@@ -44,10 +44,11 @@ func (ds *MinerDatastore) Create(ctx context.Context, userID string) (*Miner, er
 	name := namegen.Generate()
 
 	miner := &Miner{
-		ID:     id.String(),
-		UserID: userID,
-		Name:   name,
-		Status: v1.MinerStatusNew,
+		ID:        id.String(),
+		UserID:    userID,
+		Name:      name,
+		Status:    v1.MinerStatusNew,
+		AccessKey: accessKey,
 	}
 
 	err := tx.Create(miner).Error
@@ -239,24 +240,6 @@ func (ds *MinerDatastore) UpdateGeolocation(ctx context.Context, miner *Miner, g
 	return nil
 }
 
-func (ds *MinerDatastore) UpdateCryptoInfo(ctx context.Context, miner *Miner, cryptoInfo Info) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCryptoInfo")
-	defer span.Finish()
-
-	tx := ds.db.Begin()
-
-	miner.CryptoInfo = cryptoInfo
-	err := ds.db.Model(&miner).UpdateColumn("crypto_info", miner.CryptoInfo).Error
-	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf("failed to update crypto_info: %s", err)
-	}
-
-	tx.Commit()
-
-	return nil
-}
-
 func (ds *MinerDatastore) UpdateCapacityInfo(ctx context.Context, miner *Miner, capacityInfo Info) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCapacityInfo")
 	defer span.Finish()
@@ -379,6 +362,25 @@ func (ds *MinerDatastore) UpdateName(ctx context.Context, miner *Miner, name str
 	miner.Name = name
 
 	err := ds.db.Model(&miner).UpdateColumn("name", miner.Name).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
+func (ds *MinerDatastore) UpdateAccessKey(ctx context.Context, miner *Miner, accessKey string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateAccessKey")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	miner.AccessKey = accessKey
+
+	err := ds.db.Model(&miner).UpdateColumn("access_key", miner.AccessKey).Error
 	if err != nil {
 		tx.Rollback()
 		return err
