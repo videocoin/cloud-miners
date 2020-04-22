@@ -2,8 +2,13 @@ package rpc
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"math"
 	"math/big"
+	"net/http"
+
+	grpcauth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
@@ -13,6 +18,13 @@ import (
 	"github.com/videocoin/cloud-pkg/auth"
 	"github.com/videocoin/cloud-pkg/ethutils"
 )
+
+func (s *Server) authToken(ctx context.Context) (string, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "rpc.authToken")
+	defer span.Finish()
+
+	return grpcauth.AuthFromMD(ctx, "bearer")
+}
 
 func (s *Server) authenticate(ctx context.Context) (string, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "rpc.authenticate")
@@ -45,6 +57,49 @@ func (s *Server) getTokenType(ctx context.Context) auth.TokenType {
 	return tokenType
 }
 
+func (s *Server) getSymphonyAccessKey(userID, authHeader string) ([]byte, error) {
+	type Key struct {
+		Type         string `json:"type"`
+		ClientID     string `json:"client_id"`
+		PrivateKeyID string `json:"private_key_id"`
+		PrivateKey   string `json:"private_key"`
+	}
+
+	key := &Key{
+		Type:     "service_account",
+		ClientID: userID,
+	}
+
+	req, err := http.NewRequest("POST", s.iamEndpoint+"/v1/keys", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", authHeader)
+	req.Header.Add("Accept", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	values := map[string]interface{}{}
+	if err := json.NewDecoder(resp.Body).Decode(&values); err != nil {
+		return nil, err
+	}
+
+	privateKeyData := values["private_key_data"].(string)
+	privateKeyID := values["id"].(string)
+	pemBytes, err := base64.StdEncoding.DecodeString(privateKeyData)
+	if err != nil {
+		return nil, err
+	}
+
+	key.PrivateKey = string(pemBytes)
+	key.PrivateKeyID = privateKeyID
+
+	return json.Marshal(key)
+}
+
 func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 	systemInfo := &v1.SystemInfo{}
 
@@ -67,19 +122,6 @@ func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 		systemInfo.Longitude = geoInfo.(map[string]interface{})["longitude"].(float64)
 	}
 
-	cryptoInfo := &v1.CryptoInfo{}
-	if address, ok := miner.CryptoInfo["address"]; ok {
-		cryptoInfo.Address = address.(string)
-	}
-
-	if balance, ok := miner.CryptoInfo["balance"]; ok {
-		cryptoInfo.Balance = balance.(string)
-	}
-
-	if selfStake, ok := miner.CryptoInfo["stake"]; ok {
-		cryptoInfo.Stake = selfStake.(string)
-	}
-
 	capacityInfo := &v1.CapacityInfo{}
 	if value, ok := miner.CapacityInfo["encode"]; ok {
 		capacityInfo.Encode = value.(float64)
@@ -93,7 +135,6 @@ func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 		Name:         miner.Name,
 		Status:       miner.Status,
 		SystemInfo:   systemInfo,
-		CryptoInfo:   cryptoInfo,
 		CapacityInfo: capacityInfo,
 		UserID:       miner.UserID,
 		Address:      miner.Address.String,

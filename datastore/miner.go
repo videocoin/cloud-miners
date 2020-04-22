@@ -53,6 +53,7 @@ type Miner struct {
 	ID            string         `gorm:"primary_key"`
 	UserID        string         `gorm:"type:varchar(36)"`
 	Name          string         `gorm:"type:varchar(255)"`
+	AccessKey     string         `gorm:"type:varchar(255)"`
 	Status        v1.MinerStatus `gorm:"type:varchar(100)"`
 	LastPingAt    *time.Time
 	CurrentTaskID dbr.NullString
@@ -60,7 +61,6 @@ type Miner struct {
 	DeletedAt     *time.Time                `gorm:"type:timestamp NULL;DEFAULT:null"`
 	Tags          Tags                      `sql:"type:json"`
 	SystemInfo    Info                      `sql:"type:json"`
-	CryptoInfo    Info                      `sql:"type:json"`
 	CapacityInfo  Info                      `sql:"type:json"`
 	WorkerInfo    *emitterv1.WorkerResponse `sql:"type:json"`
 }

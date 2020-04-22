@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/AlekSi/pointer"
 	protoempty "github.com/gogo/protobuf/types"
@@ -17,7 +18,19 @@ func (s *Server) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerRe
 		return nil, err
 	}
 
-	miner, err := s.ds.Miners.Create(ctx, userID)
+	token, err := s.authToken(ctx)
+	if err != nil {
+		s.logger.Errorf("failed to extract auth header: %s", err)
+		return nil, rpc.ErrRpcInternal
+	}
+
+	accessKey, err := s.getSymphonyAccessKey(userID, fmt.Sprintf("Bearer %s", token))
+	if err != nil {
+		s.logger.Errorf("failed to get symphony access key: %s", err)
+		return nil, rpc.ErrRpcInternal
+	}
+
+	miner, err := s.ds.Miners.Create(ctx, userID, string(accessKey))
 	if err != nil {
 		s.logger.Errorf("failed to create miner: %s", err)
 		return nil, rpc.ErrRpcInternal

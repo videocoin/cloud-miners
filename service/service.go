@@ -22,6 +22,7 @@ func NewService(cfg *Config) (*Service, error) {
 	rpcConfig := &rpc.ServerOption{
 		Logger:          cfg.Logger,
 		Addr:            cfg.Addr,
+		IamEndpoint:     cfg.IamEndpoint,
 		DBURI:           cfg.DBURI,
 		AuthTokenSecret: cfg.AuthTokenSecret,
 	}
