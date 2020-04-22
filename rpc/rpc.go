@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
+	"github.com/videocoin/cloud-miners/datastore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -157,6 +158,9 @@ func (s *Server) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRe
 
 	miner, err := s.ds.Miners.Get(ctx, req.Id, "")
 	if err != nil {
+		if err == datastore.ErrMinerNotFound {
+			return nil, rpc.ErrRpcNotFound
+		}
 		return nil, rpc.NewRpcInternalError(err)
 	}
 
