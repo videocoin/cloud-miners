@@ -16,10 +16,6 @@ type ipwhoisResponse struct {
 	Longitude float32 `json:"longitude,string"`
 }
 
-var (
-	ErrIpwhoisFailure = errors.New("Ip Whois service failure")
-)
-
 func GetGeoLocation(ip string) (float32, float32, error) {
 	url := fmt.Sprintf("http://free.ipwhois.io/json/%s", ip)
 	client := http.Client{Timeout: time.Second * 2}
@@ -33,6 +29,9 @@ func GetGeoLocation(ip string) (float32, float32, error) {
 	if err != nil {
 		return 0, 0, err
 	}
+	if res.StatusCode != 200 {
+		return 0, 0, errors.New(fmt.Sprintf("Ip Whois service failure. Bad status code: %d", res.StatusCode))
+	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -45,7 +44,7 @@ func GetGeoLocation(ip string) (float32, float32, error) {
 		return 0, 0, err
 	}
 	if !geoResponse.Success {
-		return 0, 0, ErrIpwhoisFailure
+		return 0, 0, errors.New(fmt.Sprintf("Ip Whois service failure. Bad response: %s", body))
 	}
 
 	return geoResponse.Latitude, geoResponse.Longitude, nil
