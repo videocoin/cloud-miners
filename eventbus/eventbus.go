@@ -21,8 +21,7 @@ type Config struct {
 }
 
 type EventBus struct {
-	logger *logrus.Entry
-	mq     *mqmux.WorkerMux
+	mq *mqmux.WorkerMux
 }
 
 func New(c *Config) (*EventBus, error) {
