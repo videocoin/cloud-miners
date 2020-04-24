@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -30,7 +29,7 @@ func GetGeoLocation(ip string) (float32, float32, error) {
 		return 0, 0, err
 	}
 	if res.StatusCode != 200 {
-		return 0, 0, errors.New(fmt.Sprintf("Ip Whois service failure. Bad status code: %d", res.StatusCode))
+		return 0, 0, fmt.Errorf("Ip Whois service failure. Bad status code: %d", res.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -44,7 +43,7 @@ func GetGeoLocation(ip string) (float32, float32, error) {
 		return 0, 0, err
 	}
 	if !geoResponse.Success {
-		return 0, 0, errors.New(fmt.Sprintf("Ip Whois service failure. Bad response: %s", body))
+		return 0, 0, fmt.Errorf("Ip Whois service failure. Bad response: %s", body)
 	}
 
 	return geoResponse.Latitude, geoResponse.Longitude, nil
