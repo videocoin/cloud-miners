@@ -39,8 +39,9 @@ func New(opts ...Option) (*Manager, error) {
 }
 
 func (m *Manager) Start() {
-	go m.checkOfflineTask()
-	go m.listWorkersTask()
+	go m.checkOffline()
+	go m.listWorkers()
+	go m.checkStuckMiners()
 }
 
 func (m *Manager) Stop() {
@@ -48,7 +49,7 @@ func (m *Manager) Stop() {
 	m.lwTicker.Stop()
 }
 
-func (m *Manager) checkOfflineTask() {
+func (m *Manager) checkOffline() {
 	for range m.offlineTicker.C {
 		ctx := context.Background()
 		err := m.ds.Miners.MarkAsOffline(ctx, m.offlineTimeout)
@@ -71,20 +72,18 @@ func (m *Manager) checkOfflineTask() {
 					continue
 				}
 
-				go func(miner *datastore.Miner) {
-					if miner.CurrentTaskID.String != "" {
-						err = m.eb.EmitUpdateStreamStatus(ctx, miner.CurrentTaskID.String, streamsv1.StreamStatusFailed)
-						if err != nil {
-							m.logger.Errorf("failed to update stream status: %s", err)
-						}
+				if miner.CurrentTaskID.String != "" {
+					err = m.eb.EmitUpdateStreamStatus(ctx, miner.CurrentTaskID.String, streamsv1.StreamStatusFailed)
+					if err != nil {
+						m.logger.Errorf("failed to update stream status: %s", err)
 					}
-				}(miner)
+				}
 			}
 		}
 	}
 }
 
-func (m *Manager) listWorkersTask() {
+func (m *Manager) listWorkers() {
 	for range m.lwTicker.C {
 		workers, err := m.emitter.ListWorkers(context.Background(), &prototypes.Empty{})
 		if err != nil {
@@ -109,6 +108,28 @@ func (m *Manager) listWorkersTask() {
 					WithField("address", worker.Address).
 					Errorf("failed to update worker info: %s", err)
 				continue
+			}
+		}
+	}
+}
+
+func (m *Manager) checkStuckMiners() {
+	for range m.offlineTicker.C {
+		ctx := context.Background()
+		miners, err := m.ds.Miners.GetStuckOfflineMinerList(ctx, m.offlineTimeout)
+		if err != nil {
+			m.logger.Errorf("failed to get stuck offline miners: %s", err)
+			continue
+		}
+
+		if len(miners) > 0 {
+			for _, miner := range miners {
+				logger := m.logger.WithField("miner_id", miner.ID)
+				err := m.ds.Miners.UpdateCurrentTask(ctx, miner, "", false)
+				if err != nil {
+					logger.WithError(err).Error("failed to clear current task")
+					continue
+				}
 			}
 		}
 	}
