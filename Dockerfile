@@ -4,6 +4,7 @@ COPY . .
 RUN make build
 
 FROM bitnami/minideb:jessie
+RUN apt-get update && apt-get -y install ca-certificates
 COPY --from=builder /go/src/github.com/videocoin/cloud-miners/bin/miners /opt/videocoin/bin/miners
 COPY --from=builder /go/src/github.com/videocoin/cloud-miners/tools/linux_amd64/goose /goose
 COPY --from=builder /go/src/github.com/videocoin/cloud-miners/migrations /migrations
