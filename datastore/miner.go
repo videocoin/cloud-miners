@@ -50,15 +50,15 @@ func (info *Info) Scan(src interface{}) error {
 }
 
 type Miner struct {
-	ID            string         `gorm:"primary_key"`
-	UserID        string         `gorm:"type:varchar(36)"`
-	Name          string         `gorm:"type:varchar(255)"`
-	AccessKey     string         `gorm:"type:varchar(255)"`
-	Status        v1.MinerStatus `gorm:"type:varchar(100)"`
+	ID            string
+	UserID        string
+	Name          string
+	AccessKey     string
+	Status        v1.MinerStatus
 	LastPingAt    *time.Time
 	CurrentTaskID dbr.NullString
 	Address       dbr.NullString
-	DeletedAt     *time.Time                `gorm:"type:timestamp NULL;DEFAULT:null"`
+	DeletedAt     *time.Time
 	Tags          Tags                      `sql:"type:json"`
 	SystemInfo    Info                      `sql:"type:json"`
 	CapacityInfo  Info                      `sql:"type:json"`

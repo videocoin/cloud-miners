@@ -101,22 +101,30 @@ func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 	systemInfo := &v1.SystemInfo{}
 
 	if cpuInfo, ok := miner.SystemInfo["cpu"]; ok {
-		systemInfo.CpuCores = cpuInfo.(map[string]interface{})["cores"].(float64)
-		systemInfo.CpuFreq = cpuInfo.(map[string]interface{})["freq"].(float64)
+		if cpuInfo != nil {
+			systemInfo.CpuCores = cpuInfo.(map[string]interface{})["cores"].(float64)
+			systemInfo.CpuFreq = cpuInfo.(map[string]interface{})["freq"].(float64)
+		}
 	}
 
 	if cpuUsage, ok := miner.SystemInfo["cpu_usage"]; ok {
-		systemInfo.CpuUsage = math.Round(cpuUsage.(float64)*100) / 100
+		if cpuUsage != nil {
+			systemInfo.CpuUsage = math.Round(cpuUsage.(float64)*100) / 100
+		}
 	}
 
 	if memInfo, ok := miner.SystemInfo["memory"]; ok {
-		systemInfo.MemUsage = memInfo.(map[string]interface{})["used"].(float64)
-		systemInfo.MemTotal = memInfo.(map[string]interface{})["total"].(float64)
+		if memInfo != nil {
+			systemInfo.MemUsage = memInfo.(map[string]interface{})["used"].(float64)
+			systemInfo.MemTotal = memInfo.(map[string]interface{})["total"].(float64)
+		}
 	}
 
 	if geoInfo, ok := miner.SystemInfo["geo"]; ok {
-		systemInfo.Latitude = geoInfo.(map[string]interface{})["latitude"].(float64)
-		systemInfo.Longitude = geoInfo.(map[string]interface{})["longitude"].(float64)
+		if geoInfo != nil {
+			systemInfo.Latitude = geoInfo.(map[string]interface{})["latitude"].(float64)
+			systemInfo.Longitude = geoInfo.(map[string]interface{})["longitude"].(float64)
+		}
 	}
 
 	capacityInfo := &v1.CapacityInfo{}
