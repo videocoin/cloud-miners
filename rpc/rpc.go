@@ -266,7 +266,7 @@ func (s *Server) GetMinersCandidates(ctx context.Context, req *v1.MinersCandidat
 		m := toMinerResponse(miner)
 		resp.Items = append(resp.Items, &v1.MinerCandidateResponse{
 			ID:    m.Id,
-			Stake: int32(toVid(m.CryptoInfo.Stake)),
+			Stake: 0,
 		})
 	}
 

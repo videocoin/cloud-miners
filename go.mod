@@ -19,9 +19,7 @@ require (
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/mailru/dbr v3.0.0+incompatible
 	github.com/opentracing/opentracing-go v1.1.0
-	github.com/prometheus/client_golang v1.0.0
-	github.com/prometheus/common v0.6.0 // indirect
-	github.com/prometheus/procfs v0.0.3 // indirect
+	github.com/prometheus/client_golang v1.4.1
 	github.com/reality-lab-networks/liveplanet-api v0.0.0-20190906141833-b7fe3c9f4f36 // indirect
 	github.com/segmentio/ksuid v1.0.2 // indirect
 	github.com/sirupsen/logrus v1.4.2
