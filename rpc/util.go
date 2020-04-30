@@ -5,18 +5,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"math"
-	"math/big"
 	"net/http"
 
 	grpcauth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
 	"github.com/videocoin/cloud-miners/datastore"
 	"github.com/videocoin/cloud-pkg/auth"
-	"github.com/videocoin/cloud-pkg/ethutils"
 )
 
 func (s *Server) authToken(ctx context.Context) (string, error) {
@@ -139,12 +136,4 @@ func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 		UserID:       miner.UserID,
 		Address:      miner.Address.String,
 	}
-}
-
-func toVid(amountWei string) float64 {
-	amount := new(big.Int)
-	amount, _ = amount.SetString(amountWei, 10)
-	v, _ := ethutils.WeiToEth(amount)
-	fv, _ := v.Float64()
-	return fv
 }
