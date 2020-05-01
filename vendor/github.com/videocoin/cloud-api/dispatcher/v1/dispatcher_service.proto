@@ -49,9 +49,7 @@ message InternalConfigResponse {
   string client_id = 3;
 }
 
-message ConfigRequest {
-  string client_id = 1 [(gogoproto.customname) = "ClientID"];
-}
+message ConfigRequest {}
 
 message ConfigResponse {
     string rpc_node_url = 1 [(gogoproto.customname) = "RPCNodeURL"];

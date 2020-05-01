@@ -1,50 +1,24 @@
 package rpc
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"time"
+	"log"
+	"net"
+
+	"github.com/oschwald/geoip2-golang"
 )
 
-type ipwhoisResponse struct {
-	IP        string  `json:"ip"`
-	Success   bool    `json:"success"`
-	Latitude  float32 `json:"latitude,string"`
-	Longitude float32 `json:"longitude,string"`
-}
-
-func GetGeoLocation(ip string) (float32, float32, error) {
-	url := fmt.Sprintf("http://free.ipwhois.io/json/%s", ip)
-	client := http.Client{Timeout: time.Second * 2}
-
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func GetGeoLocation(ip string) (float64, float64, error) {
+	db, err := geoip2.Open("./GeoLite/GeoLite2.mmdb")
 	if err != nil {
-		return 0, 0, err
+		log.Fatal(err)
 	}
-
-	res, err := client.Do(req)
+	defer db.Close()
+	// If you are using strings that may be invalid, check that ip is not nil
+	parsedIP := net.ParseIP(ip)
+	record, err := db.City(parsedIP)
 	if err != nil {
-		return 0, 0, err
-	}
-	if res.StatusCode != 200 {
-		return 0, 0, fmt.Errorf("Ip Whois service failure. Bad status code: %d", res.StatusCode)
+		log.Fatal(err)
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	geoResponse := ipwhoisResponse{}
-	err = json.Unmarshal(body, &geoResponse)
-	if err != nil {
-		return 0, 0, err
-	}
-	if !geoResponse.Success {
-		return 0, 0, fmt.Errorf("Ip Whois service failure. Bad response: %s", body)
-	}
-
-	return geoResponse.Latitude, geoResponse.Longitude, nil
+	return record.Location.Latitude, record.Location.Longitude, nil
 }
