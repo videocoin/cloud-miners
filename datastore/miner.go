@@ -63,6 +63,7 @@ type Miner struct {
 	SystemInfo    Info                      `sql:"type:json"`
 	CapacityInfo  Info                      `sql:"type:json"`
 	WorkerInfo    *emitterv1.WorkerResponse `sql:"type:json"`
+	IsInternal    bool
 }
 
 func (m *Miner) IsOnline() bool {
