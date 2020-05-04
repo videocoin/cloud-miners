@@ -290,3 +290,24 @@ func (s *Server) GetKey(ctx context.Context, req *v1.KeyRequest) (*v1.KeyRespons
 		Key: miner.AccessKey,
 	}, nil
 }
+
+func (s *Server) GetInternalMiner(ctx context.Context, req *v1.InternalMinerRequest) (*v1.InternalMinerResponse, error) {
+	miner, err := s.ds.Miners.GetInternal(ctx)
+	if err != nil {
+		s.logger.WithError(err).Error("failed to get internal miner")
+		return nil, err
+	}
+
+	resp := &v1.InternalMinerResponse{
+		ID:     miner.ID,
+		Key:    miner.Key.String,
+		Secret: miner.Secret.String,
+	}
+	if ft, ok := miner.Tags["force_task_id"]; ok {
+		if len(ft) > 0 {
+			resp.TaskID = ft
+		}
+	}
+
+	return resp, nil
+}

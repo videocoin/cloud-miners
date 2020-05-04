@@ -140,6 +140,31 @@ func (ds *MinerDatastore) List(ctx context.Context, userID *string) ([]*Miner, e
 	return miners, nil
 }
 
+func (ds *MinerDatastore) GetInternal(ctx context.Context) (*Miner, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetInternal")
+	defer span.Finish()
+
+	miner := &Miner{}
+	qs := ds.db.
+		Set("gorm:query_option", "FOR UPDATE").
+		Where("is_internal = ? AND is_lock = ?", true, false).
+		Order("JSON_EXTRACT(tags, \"$.force_task_id\")", true).
+		First(&miner)
+	if err := qs.Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, err
+		}
+		return nil, fmt.Errorf("failed to get internal miner: %s", err)
+	}
+
+	err := ds.db.Model(miner).Update("is_lock", true).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to lock miner: %s", err)
+	}
+
+	return miner, nil
+}
+
 func (ds *MinerDatastore) ListByTag(ctx context.Context, tag, value string) ([]*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "ListByTag")
 	defer span.Finish()
