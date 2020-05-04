@@ -140,6 +140,20 @@ func (ds *MinerDatastore) List(ctx context.Context, userID *string) ([]*Miner, e
 	return miners, nil
 }
 
+func (ds *MinerDatastore) ListByInternal(ctx context.Context) ([]*Miner, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "ListByInternal")
+	defer span.Finish()
+
+	miners := []*Miner{}
+
+	qs := ds.db.Where("is_internal = 1").Find(&miners)
+	if err := qs.Error; err != nil {
+		return nil, fmt.Errorf("failed to get internal miners: %s", err)
+	}
+
+	return miners, nil
+}
+
 func (ds *MinerDatastore) GetInternal(ctx context.Context) (*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "GetInternal")
 	defer span.Finish()

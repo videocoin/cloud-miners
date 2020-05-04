@@ -45,7 +45,7 @@ func (mc *Collector) collectMetrics() {
 	mc.metrics.internalMinerStatus.Reset()
 
 	ctx := context.Background()
-	miners, err := mc.ds.Miners.List(ctx, nil)
+	miners, err := mc.ds.Miners.ListByInternal(ctx)
 	if err == nil {
 		for _, miner := range miners {
 			for _, status := range statuses {
