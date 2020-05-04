@@ -55,7 +55,7 @@ func (mc *Collector) collectMetrics() {
 					hostname = host["hostname"].(string)
 				}
 				if status == miner.Status.String() {
-					mc.metrics.internalMinerStatus.WithLabelValues(status, hostname).Set(1)
+					mc.metrics.internalMinerStatus.WithLabelValues(status, hostname).Inc()
 				} else {
 					mc.metrics.internalMinerStatus.WithLabelValues(status, hostname).Set(0)
 				}
