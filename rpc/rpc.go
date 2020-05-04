@@ -87,6 +87,7 @@ func (s *Server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingRespons
 		s.logger.Errorf("failed to update last ping at: %s", err)
 		return nil, err
 	}
+
 	go func(logger *logrus.Entry, req *v1.PingRequest) {
 		sysInfo := map[string]interface{}{}
 		if err := json.Unmarshal(req.SystemInfo, &sysInfo); err != nil {
@@ -96,9 +97,9 @@ func (s *Server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingRespons
 			currentIP := miner.SystemInfo["ip"]
 			newIP, _ := sysInfo["ip"].(string)
 			if currentIP != newIP || !hasGeo {
-				latitude, longitude, err := GetGeoLocation(newIP)
+				latitude, longitude, err := GetLatLon(newIP)
 				if err != nil {
-					logger.WithField("ip", newIP).Errorf("Failed to get ip geolocation: %s", err)
+					logger.WithField("ip", newIP).Errorf("failed to get location by ip: %s", err)
 				} else {
 					geoInfo := map[string]interface{}{
 						"latitude":  latitude,
