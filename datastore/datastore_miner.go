@@ -147,7 +147,7 @@ func (ds *MinerDatastore) GetInternal(ctx context.Context) (*Miner, error) {
 	miner := &Miner{}
 	qs := ds.db.
 		Set("gorm:query_option", "FOR UPDATE").
-		Where("is_internal = ? AND is_lock = ?", true, false).
+		Where("status = ? AND is_internal = ? AND is_lock = ?", v1.MinerStatusOffline, true, false).
 		Order("JSON_EXTRACT(tags, \"$.force_task_id\")", true).
 		First(&miner)
 	if err := qs.Error; err != nil {
@@ -608,4 +608,19 @@ func (ds *MinerDatastore) GetStuckOfflineMinerList(ctx context.Context, d time.D
 	}
 
 	return miners, nil
+}
+
+func (ds *MinerDatastore) Unlock(ctx context.Context, miner *Miner) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "Unlock")
+	defer span.Finish()
+
+	if miner.IsLock {
+		miner.IsLock = false
+		err := ds.db.Model(&miner).UpdateColumn("is_lock", miner.IsLock).Error
+		if err != nil {
+			return fmt.Errorf("failed to unlock: %s", err)
+		}
+	}
+
+	return nil
 }

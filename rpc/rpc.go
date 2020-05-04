@@ -26,11 +26,20 @@ func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1
 
 	resp := &v1.MinerResponse{}
 
+	ctx = opentracing.ContextWithSpan(context.Background(), span)
+
 	miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
 	if err != nil {
 		logger.Errorf("failed to get miner: %s", err)
 		return nil, err
 	}
+
+	defer func() {
+		err = s.ds.Miners.Unlock(ctx, miner)
+		if err != nil {
+			logger.Errorf("failed to unlock miner: %s", err)
+		}
+	}()
 
 	err = s.ds.Miners.UpdateAddress(ctx, miner, req.Address)
 	if err != nil {
