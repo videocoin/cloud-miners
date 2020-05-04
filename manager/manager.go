@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	prototypes "github.com/gogo/protobuf/types"
 	"github.com/sirupsen/logrus"
 	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
 	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
@@ -39,7 +40,7 @@ func New(opts ...Option) (*Manager, error) {
 
 func (m *Manager) Start() {
 	go m.checkOffline()
-	// go m.listWorkers()
+	go m.listWorkers()
 	go m.checkStuckMiners()
 }
 
@@ -82,35 +83,35 @@ func (m *Manager) checkOffline() {
 	}
 }
 
-// func (m *Manager) listWorkers() {
-// 	for range m.lwTicker.C {
-// 		workers, err := m.emitter.ListWorkers(context.Background(), &prototypes.Empty{})
-// 		if err != nil {
-// 			m.logger.Infof("failed to list workers: %s", err)
-// 			continue
-// 		}
+func (m *Manager) listWorkers() {
+	for range m.lwTicker.C {
+		workers, err := m.emitter.ListWorkers(context.Background(), &prototypes.Empty{})
+		if err != nil {
+			m.logger.Infof("failed to list workers: %s", err)
+			continue
+		}
 
-// 		for _, worker := range workers.Items {
-// 			ctx := context.Background()
+		for _, worker := range workers.Items {
+			ctx := context.Background()
 
-// 			_, err := m.ds.Miners.GetByAddress(ctx, worker.Address)
-// 			if err != nil {
-// 				m.logger.
-// 					WithField("address", worker.Address).
-// 					Warningf("failed to get worker by address: %s", err)
-// 				continue
-// 			}
+			_, err := m.ds.Miners.GetByAddress(ctx, worker.Address)
+			if err != nil {
+				m.logger.
+					WithField("address", worker.Address).
+					Warningf("failed to get worker by address: %s", err)
+				continue
+			}
 
-// 			err = m.ds.Miners.UpdateWorkerInfoByAddress(ctx, worker.Address, worker)
-// 			if err != nil {
-// 				m.logger.
-// 					WithField("address", worker.Address).
-// 					Errorf("failed to update worker info: %s", err)
-// 				continue
-// 			}
-// 		}
-// 	}
-// }
+			err = m.ds.Miners.UpdateWorkerInfoByAddress(ctx, worker.Address, worker)
+			if err != nil {
+				m.logger.
+					WithField("address", worker.Address).
+					Errorf("failed to update worker info: %s", err)
+				continue
+			}
+		}
+	}
+}
 
 func (m *Manager) checkStuckMiners() {
 	for range m.offlineTicker.C {
