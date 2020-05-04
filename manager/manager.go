@@ -40,7 +40,7 @@ func New(opts ...Option) (*Manager, error) {
 
 func (m *Manager) Start() {
 	go m.checkOffline()
-	go m.listWorkers()
+	// go m.listWorkers()
 	go m.checkStuckMiners()
 }
 
