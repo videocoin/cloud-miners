@@ -331,13 +331,12 @@ func (ds *MinerDatastore) UpdateCurrentTask(ctx context.Context, miner *Miner, t
 		miner.CurrentTaskID = dbr.NewNullString(taskID)
 	}
 
-	qs := ds.db.Model(&miner).UpdateColumn("current_task_id", miner.CurrentTaskID)
-
+	updates := map[string]interface{}{"current_task_id": miner.CurrentTaskID}
 	if updateForceTask {
-		qs = qs.UpdateColumn("tags", miner.Tags)
+		updates["tags"] = miner.Tags
 	}
 
-	err := qs.Error
+	err := ds.db.Model(&miner).Updates(updates).Error
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to update current_task_id: %s", err)
