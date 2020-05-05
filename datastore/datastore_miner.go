@@ -453,26 +453,17 @@ func (ds *MinerDatastore) MarkAllAsOffline(ctx context.Context) error {
 	return nil
 }
 
-func (ds *MinerDatastore) MarkAsOnline(ctx context.Context, ids []string) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "MarAsOnline")
+func (ds *MinerDatastore) MarkMinerAsIdle(ctx context.Context, miner *Miner) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "MarkMinerAsIdle")
 	defer span.Finish()
 
-	tx := ds.db.Begin()
-
-	err := ds.db.
-		Table("miners").
-		Where("id IN (?)", ids).
-		Updates(map[string]interface{}{
-			"is_online": true,
-			"status":    v1.MinerStatusIdle,
-		}).
-		Error
+	err := ds.db.Model(miner).Updates(map[string]interface{}{
+		"status":       v1.MinerStatusIdle,
+		"last_ping_at": time.Now(),
+	}).Error
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
-
-	tx.Commit()
 
 	return nil
 }
@@ -481,7 +472,7 @@ func (ds *MinerDatastore) MarkAsOffline(ctx context.Context, d time.Duration) er
 	span, _ := opentracing.StartSpanFromContext(ctx, "MarkAsOffline")
 	defer span.Finish()
 
-	t := time.Now().Add(-d)
+	t := time.Now().Add(-d * 2)
 
 	err := ds.db.
 		Table("miners").

@@ -73,6 +73,12 @@ func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1
 		}
 	}
 
+	err = s.ds.Miners.MarkMinerAsIdle(ctx, miner)
+	if err != nil {
+		logger.Errorf("failed to mark miner as idle: %s", err)
+		return nil, err
+	}
+
 	resp.Id = miner.ID
 	resp.Name = miner.Name
 	resp.Status = miner.Status
