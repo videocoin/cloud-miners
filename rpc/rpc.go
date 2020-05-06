@@ -210,27 +210,33 @@ func (s *Server) UnassignTask(ctx context.Context, req *v1.AssignTaskRequest) (*
 	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("client_id", req.ClientID)
 
+	logger := s.logger.WithFields(logrus.Fields{
+		"client_id": req.ClientID,
+		"task_id":   req.TaskID,
+	})
+	logger.Info("unassigning task")
+
 	if req.ClientID != "" {
 		miner, err := s.ds.Miners.Get(ctx, req.ClientID, "")
 		if err != nil {
-			s.logger.Errorf("failed to get miner: %s", err)
+			logger.Errorf("failed to get miner: %s", err)
 			return nil, err
 		}
 
 		if err := s.ds.Miners.UpdateCurrentTask(ctx, miner, "", true); err != nil {
-			s.logger.Errorf("failed to update current task: %s", err)
+			logger.Errorf("failed to update current task: %s", err)
 			return nil, err
 		}
 	} else {
 		if req.TaskID != "" {
 			miners, err := s.ds.Miners.ListByTag(ctx, "force_task_id", req.TaskID)
 			if err != nil {
-				s.logger.Errorf("failed to list miners by tag: %s", err)
+				logger.Errorf("failed to list miners by tag: %s", err)
 				return nil, err
 			}
 			for _, miner := range miners {
 				if err := s.ds.Miners.UpdateCurrentTask(ctx, miner, "", true); err != nil {
-					s.logger.Errorf("failed to update current task: %s", err)
+					logger.Errorf("failed to update current task: %s", err)
 					return nil, err
 				}
 			}
