@@ -12,6 +12,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/jinzhu/gorm v1.9.12
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect

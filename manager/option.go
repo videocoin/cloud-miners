@@ -1,11 +1,19 @@
 package manager
 
 import (
+	"time"
+
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpclogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpctracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	grpcprometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
 	"github.com/videocoin/cloud-miners/datastore"
 	"github.com/videocoin/cloud-miners/eventbus"
-	"github.com/videocoin/cloud-pkg/grpcutil"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 type Option func(*Manager) error
@@ -33,7 +41,22 @@ func WithEventBus(eb *eventbus.EventBus) Option {
 
 func WithEmitterServiceClient(addr string) Option {
 	return func(m *Manager) error {
-		conn, err := grpcutil.Connect(addr, m.logger.WithField("system", "emitter"))
+		opts := []grpc.DialOption{
+			grpc.WithInsecure(),
+			grpc.WithUnaryInterceptor(
+				grpcmiddleware.ChainUnaryClient(
+					grpctracing.UnaryClientInterceptor(grpctracing.WithTracer(opentracing.GlobalTracer())),
+					grpcprometheus.UnaryClientInterceptor,
+					grpclogrus.UnaryClientInterceptor(m.logger.WithField("system", "emitter")),
+				),
+			),
+			grpc.WithKeepaliveParams(keepalive.ClientParameters{
+				Time:                time.Second * 10,
+				Timeout:             time.Second * 10,
+				PermitWithoutStream: true,
+			}),
+		}
+		conn, err := grpc.Dial(addr, opts...)
 		if err != nil {
 			return err
 		}
