@@ -47,12 +47,6 @@ func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1
 		return nil, err
 	}
 
-	err = s.eb.EmitAssignMinerAddress(ctx, miner.UserID, miner.Address.String)
-	if err != nil {
-		logger.Errorf("failed to emit assign miner address: %s", err)
-		return nil, err
-	}
-
 	logger.Infof("miner status is %s", miner.Status.String())
 
 	if miner.Status == v1.MinerStatusIdle || miner.Status == v1.MinerStatusBusy {

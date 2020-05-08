@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
 	"github.com/videocoin/cloud-miners/datastore"
-	"github.com/videocoin/cloud-miners/eventbus"
 )
 
 type Manager struct {
@@ -17,7 +16,6 @@ type Manager struct {
 	offlineTicker  *time.Ticker
 	lwTicker       *time.Ticker
 	ds             *datastore.Datastore
-	eb             *eventbus.EventBus
 	emitter        emitterv1.EmitterServiceClient
 }
 

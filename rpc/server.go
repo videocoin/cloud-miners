@@ -6,7 +6,6 @@ import (
 	"github.com/sirupsen/logrus"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-miners/datastore"
-	"github.com/videocoin/cloud-miners/eventbus"
 	"github.com/videocoin/cloud-pkg/grpcutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -15,26 +14,24 @@ import (
 )
 
 type ServerOption struct {
+	Logger          *logrus.Entry
 	Addr            string
 	IamEndpoint     string
 	DBURI           string
 	AuthTokenSecret string
-
-	Logger *logrus.Entry
 }
 
 type Server struct {
+	logger          *logrus.Entry
 	addr            string
 	iamEndpoint     string
 	grpc            *grpc.Server
 	listen          net.Listener
-	logger          *logrus.Entry
 	ds              *datastore.Datastore
-	eb              *eventbus.EventBus
 	authTokenSecret string
 }
 
-func NewServer(opts *ServerOption, ds *datastore.Datastore, eb *eventbus.EventBus) (*Server, error) {
+func NewServer(opts *ServerOption, ds *datastore.Datastore) (*Server, error) {
 	grpcOpts := grpcutil.DefaultServerOpts(opts.Logger)
 	grpcServer := grpc.NewServer(grpcOpts...)
 
@@ -53,7 +50,6 @@ func NewServer(opts *ServerOption, ds *datastore.Datastore, eb *eventbus.EventBu
 		grpc:            grpcServer,
 		listen:          listen,
 		ds:              ds,
-		eb:              eb,
 		authTokenSecret: opts.AuthTokenSecret,
 	}
 

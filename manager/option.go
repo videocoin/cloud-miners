@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
 	"github.com/videocoin/cloud-miners/datastore"
-	"github.com/videocoin/cloud-miners/eventbus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
@@ -28,13 +27,6 @@ func WithLogger(logger *logrus.Entry) Option {
 func WithDatastore(ds *datastore.Datastore) Option {
 	return func(m *Manager) error {
 		m.ds = ds
-		return nil
-	}
-}
-
-func WithEventBus(eb *eventbus.EventBus) Option {
-	return func(m *Manager) error {
-		m.eb = eb
 		return nil
 	}
 }
