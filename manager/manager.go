@@ -7,7 +7,6 @@ import (
 	prototypes "github.com/gogo/protobuf/types"
 	"github.com/sirupsen/logrus"
 	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
-	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
 	"github.com/videocoin/cloud-miners/datastore"
 	"github.com/videocoin/cloud-miners/eventbus"
 )
@@ -70,13 +69,6 @@ func (m *Manager) checkOffline() {
 				if err != nil {
 					m.logger.Errorf("failed to mark miner as offline: %s", err)
 					continue
-				}
-
-				if miner.CurrentTaskID.String != "" {
-					err = m.eb.EmitUpdateStreamStatus(ctx, miner.CurrentTaskID.String, streamsv1.StreamStatusFailed)
-					if err != nil {
-						m.logger.Errorf("failed to update stream status: %s", err)
-					}
 				}
 			}
 		}

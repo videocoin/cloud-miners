@@ -588,7 +588,7 @@ func (ds *MinerDatastore) GetStuckMinerList(ctx context.Context, d time.Duration
 	span, _ := opentracing.StartSpanFromContext(ctx, "GetStuckMinerList")
 	defer span.Finish()
 
-	t := time.Now().Add(-d)
+	t := time.Now().Add(-d * 2)
 	miners := []*Miner{}
 
 	err := ds.db.Where("last_ping_at < ? AND status = ?", t, v1.MinerStatusBusy).Find(&miners).Error
@@ -603,7 +603,7 @@ func (ds *MinerDatastore) GetStuckOfflineMinerList(ctx context.Context, d time.D
 	span, _ := opentracing.StartSpanFromContext(ctx, "GetStuckOfflineMinerList")
 	defer span.Finish()
 
-	t := time.Now().Add(-d)
+	t := time.Now().Add(-d * 2)
 	miners := []*Miner{}
 
 	err := ds.db.Where("last_ping_at < ? AND status = ? AND current_task_id IS NOT NULL", t, v1.MinerStatusOffline).Find(&miners).Error

@@ -7,10 +7,7 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
-	dispatcherv1 "github.com/videocoin/cloud-api/dispatcher/v1"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
-	privatev1 "github.com/videocoin/cloud-api/streams/private/v1"
-	streamsv1 "github.com/videocoin/cloud-api/streams/v1"
 	"github.com/videocoin/cloud-pkg/mqmux"
 )
 
@@ -36,17 +33,7 @@ func New(c *Config) (*EventBus, error) {
 }
 
 func (e *EventBus) Start() error {
-	err := e.mq.Publisher("streams.status")
-	if err != nil {
-		return err
-	}
-
-	err = e.mq.Publisher("tasks.events")
-	if err != nil {
-		return err
-	}
-
-	err = e.mq.Publisher("miners.events")
+	err := e.mq.Publisher("miners.events")
 	if err != nil {
 		return err
 	}
@@ -56,64 +43,6 @@ func (e *EventBus) Start() error {
 
 func (e *EventBus) Stop() error {
 	return e.mq.Close()
-}
-
-func (e *EventBus) EmitUpdateStreamStatus(ctx context.Context, id string, status streamsv1.StreamStatus) error {
-	headers := make(amqp.Table)
-
-	span := opentracing.SpanFromContext(ctx)
-	if span != nil {
-		ext.SpanKindRPCServer.Set(span)
-		ext.Component.Set(span, "miners")
-		err := span.Tracer().Inject(
-			span.Context(),
-			opentracing.TextMap,
-			mqmux.RMQHeaderCarrier(headers),
-		)
-		if err != nil {
-			return err
-		}
-	}
-
-	event := &privatev1.Event{
-		Type:     privatev1.EventTypeUpdateStatus,
-		StreamID: id,
-		Status:   status,
-	}
-	err := e.mq.PublishX("streams.status", event, headers)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (e *EventBus) EmitUpdateTaskStatus(ctx context.Context, id string, status dispatcherv1.TaskStatus) error {
-	headers := make(amqp.Table)
-
-	span := opentracing.SpanFromContext(ctx)
-	if span != nil {
-		ext.SpanKindRPCServer.Set(span)
-		ext.Component.Set(span, "miners")
-		err := span.Tracer().Inject(
-			span.Context(),
-			opentracing.TextMap,
-			mqmux.RMQHeaderCarrier(headers),
-		)
-		if err != nil {
-			return err
-		}
-	}
-
-	event := &dispatcherv1.Event{
-		Type:   dispatcherv1.EventTypeUpdateStatus,
-		TaskID: id,
-		Status: status,
-	}
-	err := e.mq.PublishX("tasks.events", event, headers)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (e *EventBus) EmitAssignMinerAddress(ctx context.Context, userID, address string) error {
