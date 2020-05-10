@@ -154,6 +154,27 @@ func (ds *MinerDatastore) ListByInternal(ctx context.Context) ([]*Miner, error) 
 	return miners, nil
 }
 
+func (ds *MinerDatastore) ListByOnline(ctx context.Context) ([]*Miner, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "ListByOnline")
+	defer span.Finish()
+
+	miners := []*Miner{}
+
+	err := ds.db.
+		Where(
+			"status IN (?)", []string{
+				v1.MinerStatusIdle.String(),
+				v1.MinerStatusBusy.String()},
+		).
+		Find(&miners).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	return miners, nil
+}
+
 func (ds *MinerDatastore) GetInternal(ctx context.Context) (*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "GetInternal")
 	defer span.Finish()

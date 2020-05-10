@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	prototypes "github.com/gogo/protobuf/types"
 	"github.com/sirupsen/logrus"
 	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
 	"github.com/videocoin/cloud-miners/datastore"
@@ -37,8 +36,8 @@ func New(opts ...Option) (*Manager, error) {
 
 func (m *Manager) Start() {
 	go m.checkOffline()
-	go m.listWorkers()
 	go m.checkStuckMiners()
+	go m.updateWorkerInfo()
 }
 
 func (m *Manager) Stop() {
@@ -73,31 +72,30 @@ func (m *Manager) checkOffline() {
 	}
 }
 
-func (m *Manager) listWorkers() {
+func (m *Manager) updateWorkerInfo() {
 	for range m.lwTicker.C {
-		workers, err := m.emitter.ListWorkers(context.Background(), &prototypes.Empty{})
+		emptyCtx := context.Background()
+		miners, err := m.ds.Miners.ListByOnline(emptyCtx)
 		if err != nil {
-			m.logger.Infof("failed to list workers: %s", err)
-			continue
+			m.logger.Infof("failed to list workers by online: %s", err)
 		}
 
-		for _, worker := range workers.Items {
-			ctx := context.Background()
-
-			_, err := m.ds.Miners.GetByAddress(ctx, worker.Address)
-			if err != nil {
-				m.logger.
-					WithField("address", worker.Address).
-					Warningf("failed to get worker by address: %s", err)
-				continue
-			}
-
-			err = m.ds.Miners.UpdateWorkerInfoByAddress(ctx, worker.Address, worker)
-			if err != nil {
-				m.logger.
-					WithField("address", worker.Address).
-					Errorf("failed to update worker info: %s", err)
-				continue
+		for _, miner := range miners {
+			logger := m.logger.WithField("miner_id", miner.ID)
+			if miner.Address.String != "" {
+				workerReq := &emitterv1.WorkerRequest{Address: miner.Address.String}
+				worker, err := m.emitter.GetWorker(emptyCtx, workerReq)
+				if err != nil {
+					logger.Infof("failed to get worker: %s", err)
+					continue
+				}
+				err = m.ds.Miners.UpdateWorkerInfoByAddress(emptyCtx, worker.Address, worker)
+				if err != nil {
+					logger.
+						WithField("address", worker.Address).
+						Errorf("failed to update worker info: %s", err)
+					continue
+				}
 			}
 		}
 	}
