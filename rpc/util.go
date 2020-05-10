@@ -14,6 +14,7 @@ import (
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
 	"github.com/videocoin/cloud-miners/datastore"
 	"github.com/videocoin/cloud-pkg/auth"
+	"github.com/videocoin/cloud-pkg/ethutils"
 )
 
 func (s *Server) authToken(ctx context.Context) (string, error) {
@@ -135,13 +136,49 @@ func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 		capacityInfo.Cpu = value.(float64)
 	}
 
+	var totalStake, delegatedStake, selfStake float64
+	if miner.WorkerInfo != nil {
+		if miner.WorkerInfo.TotalStake != "" {
+			wei, err := ethutils.ParseBigInt(miner.WorkerInfo.TotalStake)
+			if err == nil {
+				vid, e := ethutils.WeiToEth(&wei)
+				if e == nil {
+					totalStake, _ = vid.Float64()
+				}
+			}
+		}
+
+		if miner.WorkerInfo.SelfStake != "" {
+			wei, err := ethutils.ParseBigInt(miner.WorkerInfo.SelfStake)
+			if err == nil {
+				vid, e := ethutils.WeiToEth(&wei)
+				if e == nil {
+					selfStake, _ = vid.Float64()
+				}
+			}
+		}
+
+		if miner.WorkerInfo.DelegatedStake != "" {
+			wei, err := ethutils.ParseBigInt(miner.WorkerInfo.DelegatedStake)
+			if err == nil {
+				vid, e := ethutils.WeiToEth(&wei)
+				if e == nil {
+					delegatedStake, _ = vid.Float64()
+				}
+			}
+		}
+	}
+
 	return &v1.MinerResponse{
-		Id:           miner.ID,
-		Name:         miner.Name,
-		Status:       miner.Status,
-		SystemInfo:   systemInfo,
-		CapacityInfo: capacityInfo,
-		UserID:       miner.UserID,
-		Address:      miner.Address.String,
+		Id:             miner.ID,
+		Name:           miner.Name,
+		Status:         miner.Status,
+		SystemInfo:     systemInfo,
+		CapacityInfo:   capacityInfo,
+		UserID:         miner.UserID,
+		Address:        miner.Address.String,
+		TotalStake:     totalStake,
+		DelegatedStake: delegatedStake,
+		SelfStake:      selfStake,
 	}
 }
