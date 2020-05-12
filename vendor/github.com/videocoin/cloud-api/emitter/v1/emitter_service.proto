@@ -23,8 +23,9 @@ service EmitterService {
     rpc ValidateProof(ValidateProofRequest) returns (ValidateProofResponse) {}
     rpc ScrapProof(ScrapProofRequest) returns (ScrapProofResponse) {}
     rpc ListWorkers(google.protobuf.Empty) returns (ListWorkersResponse) {}
-    rpc GetWorker(WorkerRequest) returns (WorkerResponse) {}
     rpc AddFunds(AddFundsRequest) returns (AddFundsResponse) {}
+    rpc GetWorker(WorkerRequest) returns (WorkerResponse) {}
+    rpc GetReward(RewardRequest) returns (RewardResponse) {}
 }
 
 message Tx {
@@ -151,3 +152,11 @@ message AddFundsRequest {
 }
 
 message AddFundsResponse {}
+
+message RewardRequest {
+    string address = 1;
+}
+
+message RewardResponse {
+    double reward = 1;
+}

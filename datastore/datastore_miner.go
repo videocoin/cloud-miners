@@ -335,6 +335,18 @@ func (ds *MinerDatastore) UpdateWorkerInfoByAddress(ctx context.Context, address
 	return nil
 }
 
+func (ds *MinerDatastore) UpdateMinerReward(ctx context.Context, miner *Miner, reward float64) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateMinerReward")
+	defer span.Finish()
+
+	err := ds.db.Model(miner).UpdateColumn("reward", reward).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (ds *MinerDatastore) UpdateCurrentTask(ctx context.Context, miner *Miner, taskID string, clearForceTask bool) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "UpdateCurrentTask")
 	defer span.Finish()

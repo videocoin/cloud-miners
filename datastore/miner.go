@@ -67,6 +67,7 @@ type Miner struct {
 	Secret        dbr.NullString
 	IsInternal    bool
 	IsLock        bool
+	Reward        float64
 }
 
 func (m *Miner) IsOnline() bool {

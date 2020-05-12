@@ -13,7 +13,8 @@ type Manager struct {
 	logger         *logrus.Entry
 	offlineTimeout time.Duration
 	offlineTicker  *time.Ticker
-	lwTicker       *time.Ticker
+	wiTicker       *time.Ticker
+	wrTicker       *time.Ticker
 	ds             *datastore.Datastore
 	emitter        emitterv1.EmitterServiceClient
 }
@@ -23,7 +24,8 @@ func New(opts ...Option) (*Manager, error) {
 	ds := &Manager{
 		offlineTimeout: offlineTimeout,
 		offlineTicker:  time.NewTicker(offlineTimeout),
-		lwTicker:       time.NewTicker(time.Second * 10),
+		wiTicker:       time.NewTicker(time.Second * 10),
+		wrTicker:       time.NewTicker(time.Second * 30),
 	}
 	for _, o := range opts {
 		if err := o(ds); err != nil {
@@ -38,11 +40,13 @@ func (m *Manager) Start() {
 	go m.checkOffline()
 	go m.checkStuckMiners()
 	go m.updateWorkerInfo()
+	go m.updateWorkerReward()
 }
 
 func (m *Manager) Stop() {
 	m.offlineTicker.Stop()
-	m.lwTicker.Stop()
+	m.wiTicker.Stop()
+	m.wrTicker.Stop()
 }
 
 func (m *Manager) checkOffline() {
@@ -73,11 +77,12 @@ func (m *Manager) checkOffline() {
 }
 
 func (m *Manager) updateWorkerInfo() {
-	for range m.lwTicker.C {
+	for range m.wiTicker.C {
 		emptyCtx := context.Background()
 		miners, err := m.ds.Miners.ListByOnline(emptyCtx)
 		if err != nil {
 			m.logger.Infof("failed to list workers by online: %s", err)
+			continue
 		}
 
 		for _, miner := range miners {
@@ -117,6 +122,37 @@ func (m *Manager) checkStuckMiners() {
 				if err != nil {
 					logger.WithError(err).Error("failed to clear current task")
 					continue
+				}
+			}
+		}
+	}
+}
+
+func (m *Manager) updateWorkerReward() {
+	for range m.wrTicker.C {
+		emptyCtx := context.Background()
+		miners, err := m.ds.Miners.List(emptyCtx, nil)
+		if err != nil {
+			m.logger.Infof("failed to list workers: %s", err)
+			continue
+		}
+
+		for _, miner := range miners {
+			logger := m.logger.WithField("miner_id", miner.ID)
+			if miner.Address.String != "" {
+				rewardReq := &emitterv1.RewardRequest{Address: miner.Address.String}
+				reward, err := m.emitter.GetReward(emptyCtx, rewardReq)
+				if err != nil {
+					logger.Infof("failed to get worker reward: %s", err)
+					continue
+				}
+
+				if reward.Reward > 0 {
+					err = m.ds.Miners.UpdateMinerReward(emptyCtx, miner, reward.Reward)
+					if err != nil {
+						logger.WithError(err).Error("failed to update worker reward")
+						continue
+					}
 				}
 			}
 		}

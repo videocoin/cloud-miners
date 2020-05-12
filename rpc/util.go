@@ -180,5 +180,6 @@ func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 		TotalStake:     totalStake,
 		DelegatedStake: delegatedStake,
 		SelfStake:      selfStake,
+		Reward:         miner.Reward,
 	}
 }
