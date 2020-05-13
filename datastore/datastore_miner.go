@@ -44,13 +44,14 @@ func (ds *MinerDatastore) Create(ctx context.Context, userID, accessKey string, 
 	name := namegen.Generate()
 
 	miner := &Miner{
-		ID:        id.String(),
-		UserID:    userID,
-		Name:      name,
-		Status:    v1.MinerStatusNew,
-		AccessKey: accessKey,
-		Key:       dbr.NewNullString(k),
-		Secret:    dbr.NewNullString(s),
+		ID:         id.String(),
+		UserID:     userID,
+		Name:       name,
+		Status:     v1.MinerStatusNew,
+		AccessKey:  accessKey,
+		Key:        dbr.NewNullString(k),
+		Secret:     dbr.NewNullString(s),
+		IsInternal: k != "" && s != "",
 	}
 
 	err := tx.Create(miner).Error
