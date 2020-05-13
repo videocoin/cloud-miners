@@ -12,7 +12,7 @@ import (
 	"github.com/videocoin/cloud-miners/datastore"
 )
 
-func (s *Server) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerResponse, error) {
+func (s *Server) Create(ctx context.Context, req *v1.CreateMinerRequest) (*v1.MinerResponse, error) {
 	userID, err := s.authenticate(ctx)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (s *Server) Create(ctx context.Context, req *protoempty.Empty) (*v1.MinerRe
 		return nil, rpc.ErrRpcInternal
 	}
 
-	miner, err := s.ds.Miners.Create(ctx, userID, string(accessKey))
+	miner, err := s.ds.Miners.Create(ctx, userID, string(accessKey), req.K, req.S)
 	if err != nil {
 		s.logger.Errorf("failed to create miner: %s", err)
 		return nil, rpc.ErrRpcInternal

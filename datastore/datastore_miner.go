@@ -29,7 +29,7 @@ func NewMinerDatastore(db *gorm.DB) (*MinerDatastore, error) {
 	return &MinerDatastore{db: db}, nil
 }
 
-func (ds *MinerDatastore) Create(ctx context.Context, userID, accessKey string) (*Miner, error) {
+func (ds *MinerDatastore) Create(ctx context.Context, userID, accessKey string, k, s string) (*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "Create")
 	defer span.Finish()
 
@@ -49,6 +49,8 @@ func (ds *MinerDatastore) Create(ctx context.Context, userID, accessKey string) 
 		Name:      name,
 		Status:    v1.MinerStatusNew,
 		AccessKey: accessKey,
+		Key:       dbr.NewNullString(k),
+		Secret:    dbr.NewNullString(s),
 	}
 
 	err := tx.Create(miner).Error
