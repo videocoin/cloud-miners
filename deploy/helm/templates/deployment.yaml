@@ -46,6 +46,11 @@ spec:
                 configMapKeyRef:
                   name: {{ .Chart.Name }}
                   key: emitterRpcAddr
+            - name: IAM_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Chart.Name }}
+                  key: iamEndpoint
             - name: DBURI
               valueFrom:
                 secretKeyRef:
