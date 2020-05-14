@@ -185,7 +185,7 @@ func (ds *MinerDatastore) GetInternal(ctx context.Context) (*Miner, error) {
 	miner := &Miner{}
 	qs := ds.db.
 		Set("gorm:query_option", "FOR UPDATE").
-		Where("status = ? AND is_internal = ? AND is_lock = ?", v1.MinerStatusOffline, true, false).
+		Where("status IN (?) AND is_internal = ? AND is_lock = ?", []string{v1.MinerStatusOffline.String(), v1.MinerStatusNew.String()}, true, false).
 		Order("JSON_EXTRACT(tags, \"$.force_task_id\")", true).
 		First(&miner)
 	if err := qs.Error; err != nil {
