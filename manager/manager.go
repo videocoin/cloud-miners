@@ -86,6 +86,10 @@ func (m *Manager) updateWorkerInfo() {
 		}
 
 		for _, miner := range miners {
+			if miner.IsInternal {
+				continue
+			}
+
 			logger := m.logger.WithField("miner_id", miner.ID)
 			if miner.Address.String != "" {
 				workerReq := &emitterv1.WorkerRequest{Address: miner.Address.String}
