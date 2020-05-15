@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/AlekSi/pointer"
 	protoempty "github.com/gogo/protobuf/types"
@@ -24,13 +23,13 @@ func (s *Server) Create(ctx context.Context, req *v1.CreateMinerRequest) (*v1.Mi
 		return nil, rpc.ErrRpcInternal
 	}
 
-	accessKey, err := s.getSymphonyAccessKey(userID, fmt.Sprintf("Bearer %s", token))
+	sa, err := s.iam.CreateServiceAccountJSON(token, userID)
 	if err != nil {
-		s.logger.Errorf("failed to get symphony access key: %s", err)
+		s.logger.WithError(err).Error("failed to create symphony service account")
 		return nil, rpc.ErrRpcInternal
 	}
 
-	miner, err := s.ds.Miners.Create(ctx, userID, string(accessKey), req.K, req.S)
+	miner, err := s.ds.Miners.Create(ctx, userID, string(sa), req.K, req.S)
 	if err != nil {
 		s.logger.Errorf("failed to create miner: %s", err)
 		return nil, rpc.ErrRpcInternal

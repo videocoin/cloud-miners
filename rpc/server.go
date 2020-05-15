@@ -7,6 +7,7 @@ import (
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-miners/datastore"
 	"github.com/videocoin/cloud-pkg/grpcutil"
+	"github.com/videocoin/cloud-pkg/iam"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthv1 "google.golang.org/grpc/health/grpc_health_v1"
@@ -16,19 +17,19 @@ import (
 type ServerOption struct {
 	Logger          *logrus.Entry
 	Addr            string
-	IamEndpoint     string
 	DBURI           string
 	AuthTokenSecret string
+	IAM             *iam.Client
 }
 
 type Server struct {
 	logger          *logrus.Entry
 	addr            string
-	iamEndpoint     string
+	authTokenSecret string
 	grpc            *grpc.Server
 	listen          net.Listener
 	ds              *datastore.Datastore
-	authTokenSecret string
+	iam             *iam.Client
 }
 
 func NewServer(opts *ServerOption, ds *datastore.Datastore) (*Server, error) {
@@ -46,11 +47,11 @@ func NewServer(opts *ServerOption, ds *datastore.Datastore) (*Server, error) {
 	rpcServer := &Server{
 		logger:          opts.Logger,
 		addr:            opts.Addr,
-		iamEndpoint:     opts.IamEndpoint,
+		authTokenSecret: opts.AuthTokenSecret,
+		iam:             opts.IAM,
 		grpc:            grpcServer,
 		listen:          listen,
 		ds:              ds,
-		authTokenSecret: opts.AuthTokenSecret,
 	}
 
 	v1.RegisterMinersServiceServer(grpcServer, rpcServer)

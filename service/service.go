@@ -5,6 +5,7 @@ import (
 	"github.com/videocoin/cloud-miners/manager"
 	"github.com/videocoin/cloud-miners/metrics"
 	"github.com/videocoin/cloud-miners/rpc"
+	"github.com/videocoin/cloud-pkg/iam"
 )
 
 type Service struct {
@@ -17,12 +18,17 @@ type Service struct {
 }
 
 func NewService(cfg *Config) (*Service, error) {
+	iamCli, err := iam.NewClient(cfg.IamEndpoint)
+	if err != nil {
+		return nil, err
+	}
+
 	rpcConfig := &rpc.ServerOption{
 		Logger:          cfg.Logger,
 		Addr:            cfg.Addr,
-		IamEndpoint:     cfg.IamEndpoint,
 		DBURI:           cfg.DBURI,
 		AuthTokenSecret: cfg.AuthTokenSecret,
+		IAM:             iamCli,
 	}
 
 	ds, err := datastore.NewDatastore(cfg.DBURI)

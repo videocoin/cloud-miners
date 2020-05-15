@@ -158,6 +158,7 @@ github.com/videocoin/cloud-api/users/v1
 github.com/videocoin/cloud-pkg/auth
 github.com/videocoin/cloud-pkg/ethutils
 github.com/videocoin/cloud-pkg/grpcutil
+github.com/videocoin/cloud-pkg/iam
 github.com/videocoin/cloud-pkg/logger
 github.com/videocoin/cloud-pkg/mqmux
 github.com/videocoin/cloud-pkg/tracer
