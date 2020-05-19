@@ -281,8 +281,9 @@ func (s *Server) GetMinersCandidates(ctx context.Context, req *v1.MinersCandidat
 	for _, miner := range miners {
 		m := toMinerResponse(miner)
 		resp.Items = append(resp.Items, &v1.MinerCandidateResponse{
-			ID:    m.Id,
-			Stake: 0,
+			ID:         miner.ID,
+			Stake:      m.TotalStake,
+			IsInternal: miner.IsInternal,
 		})
 	}
 
