@@ -54,6 +54,10 @@ func (ds *MinerDatastore) Create(ctx context.Context, userID, accessKey string, 
 		IsInternal: k != "" && s != "",
 	}
 
+	if miner.IsInternal {
+		miner.Name = "zone0-" + miner.Name
+	}
+
 	err := tx.Create(miner).Error
 	if err != nil {
 		tx.Rollback()
