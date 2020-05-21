@@ -25,7 +25,6 @@ type MinerDatastore struct {
 }
 
 func NewMinerDatastore(db *gorm.DB) (*MinerDatastore, error) {
-	db.AutoMigrate(&Miner{})
 	return &MinerDatastore{db: db}, nil
 }
 
