@@ -171,6 +171,7 @@ func (s *Server) GetByID(ctx context.Context, req *v1.MinerRequest) (*v1.MinerRe
 		Name:       miner.Name,
 		SystemInfo: &v1.SystemInfo{},
 		UserID:     miner.UserID,
+		IsBlock:    miner.IsBlock,
 	}
 
 	if miner.SystemInfo != nil {

@@ -68,6 +68,7 @@ type Miner struct {
 	IsInternal    bool
 	IsLock        bool
 	Reward        float64
+	IsBlock       bool
 }
 
 func (m *Miner) IsOnline() bool {
