@@ -118,6 +118,8 @@ func (s *Server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingRespons
 					if err := s.ds.Miners.UpdateGeolocation(ctx, miner, geoInfo); err != nil {
 						logger.Errorf("failed to update geolocation: %s", err)
 					}
+
+					sysInfo["geo"] = geoInfo
 				}
 			}
 			if hasGeo {
