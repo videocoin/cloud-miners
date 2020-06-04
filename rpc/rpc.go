@@ -18,6 +18,8 @@ func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1
 	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("client_id", req.ClientID)
 	span.SetTag("address", req.Address)
+	span.SetTag("is_rpi", req.IsRaspberry)
+	span.SetTag("is_jetson", req.IsJetson)
 
 	logger := s.logger.WithFields(logrus.Fields{
 		"client_id": req.ClientID,
@@ -41,12 +43,6 @@ func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1
 		}
 	}()
 
-	err = s.ds.Miners.UpdateAddress(ctx, miner, req.Address)
-	if err != nil {
-		logger.Errorf("failed to update address: %s", err)
-		return nil, err
-	}
-
 	logger.Infof("miner status is %s", miner.Status.String())
 
 	if miner.Status == v1.MinerStatusIdle || miner.Status == v1.MinerStatusBusy {
@@ -64,6 +60,29 @@ func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1
 		if m.Status == v1.MinerStatusIdle || m.Status == v1.MinerStatusBusy {
 			logger.Warningf("miner is already running")
 			return nil, status.Errorf(codes.AlreadyExists, "miner is already running")
+		}
+	}
+
+	err = s.ds.Miners.UpdateAddress(ctx, miner, req.Address)
+	if err != nil {
+		logger.Errorf("failed to update address: %s", err)
+		return nil, err
+	}
+
+	var tags []*v1.Tag
+	if req.IsRaspberry {
+		tags = []*v1.Tag{{Key: "hw", Value: "raspberrypi"}}
+	} else if req.IsJetson {
+		tags = []*v1.Tag{{Key: "hw", Value: "jetson"}}
+	} else {
+		tags = []*v1.Tag{{Key: "hw", Value: ""}}
+	}
+
+	if len(tags) > 0 {
+		err = s.ds.Miners.SetTags(ctx, miner, tags)
+		if err != nil {
+			logger.Errorf("failed to update tags: %s", err)
+			return nil, err
 		}
 	}
 
