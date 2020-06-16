@@ -1,27 +1,47 @@
-replicasCount: 3
+replicasCount: 1
 maxUnavailableCount: 0
 
 image:
-  repository: gcr.io/videocoin-network/miners
+  repository: registry.videocoin.net/cloud/miners
   tag: latest
   pullPolicy: Always
+  pullSecrets: 
+  - name: regcred
+
+serviceAccount:
+  name: default
 
 config: {}
 
 service:
-  type: ClusterIP
-  externalRpcPort: 5011
-  internalRpcPort: 5011
-  metricsPort: 15011
+  ports:
+    grpc: 5011
+    metrics: 15011
 
 autoscaler:
   minCount: 1
-  maxCount: 10
+  maxCount: 3
   targets:
     targetCPUUtilizationPercentage: 70
 
-resources: {}
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 500m
+    memory: 512Mi
 
-secrets:
-  sentryDsn: ""
-
+annotations:
+  vault.hashicorp.com/agent-inject: "true"
+  vault.hashicorp.com/role: "console-miners"
+  vault.hashicorp.com/agent-inject-secret-common: "videocoin/v1/networks/everest-dev/console/common"
+  vault.hashicorp.com/agent-inject-secret-config: "videocoin/v1/networks/everest-dev/console/miners"
+  vault.hashicorp.com/agent-inject-template-common: |
+    {{ with secret "videocoin/v1/networks/everest-dev/console/common" }}{{ range $k, $v := .Data }}
+    export {{ $k }}="{{ $v }}"
+    {{ end }}{{ end }}
+  vault.hashicorp.com/agent-inject-template-config: |
+    {{ with secret "videocoin/v1/networks/everest-dev/console/miners" }}{{ range $k, $v := .Data }}
+    export {{ $k }}="{{ $v }}"
+    {{ end }}{{ end }}
