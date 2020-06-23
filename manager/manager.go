@@ -24,7 +24,7 @@ func New(opts ...Option) (*Manager, error) {
 	ds := &Manager{
 		offlineTimeout: offlineTimeout,
 		offlineTicker:  time.NewTicker(offlineTimeout),
-		wiTicker:       time.NewTicker(time.Second * 10),
+		wiTicker:       time.NewTicker(time.Second * 30),
 		wrTicker:       time.NewTicker(time.Second * 30),
 	}
 	for _, o := range opts {
