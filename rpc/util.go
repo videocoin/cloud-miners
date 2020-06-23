@@ -6,6 +6,7 @@ import (
 
 	grpcauth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/opentracing/opentracing-go"
+	emitterv1 "github.com/videocoin/cloud-api/emitter/v1"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
 	usersv1 "github.com/videocoin/cloud-api/users/v1"
@@ -123,6 +124,11 @@ func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 		}
 	}
 
+	workerState := emitterv1.WorkerStateBonding
+	if miner.WorkerInfo != nil {
+		workerState = miner.WorkerInfo.State
+	}
+
 	return &v1.MinerResponse{
 		Id:             miner.ID,
 		Name:           miner.Name,
@@ -137,5 +143,6 @@ func toMinerResponse(miner *datastore.Miner) *v1.MinerResponse {
 		Reward:         miner.Reward,
 		IsBlock:        miner.IsBlock,
 		IsInternal:     miner.IsInternal,
+		WorkerState:    workerState,
 	}
 }
