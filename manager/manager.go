@@ -79,7 +79,8 @@ func (m *Manager) checkOffline() {
 func (m *Manager) updateWorkerInfo() {
 	for range m.wiTicker.C {
 		emptyCtx := context.Background()
-		miners, err := m.ds.Miners.ListByOnline(emptyCtx)
+		// miners, err := m.ds.Miners.ListByOnline(emptyCtx)
+		miners, err := m.ds.Miners.List(emptyCtx, nil)
 		if err != nil {
 			m.logger.Infof("failed to list workers by online: %s", err)
 			continue
