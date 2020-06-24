@@ -50,16 +50,34 @@ func (s *Server) Register(ctx context.Context, req *v1.RegistrationRequest) (*v1
 		return nil, status.Errorf(codes.AlreadyExists, "miner is already running")
 	}
 
-	minerList, err := s.ds.Miners.ListByAddress(ctx, req.Address)
-	if err != nil {
-		logger.Errorf("failed to list by address: %s", err)
-		return nil, err
-	}
+	if miner.IsInternal {
+		minerList, err := s.ds.Miners.ListByAddress(ctx, req.Address)
+		if err != nil {
+			logger.Errorf("failed to list by address: %s", err)
+			return nil, err
+		}
 
-	for _, m := range minerList {
-		if m.Status == v1.MinerStatusIdle || m.Status == v1.MinerStatusBusy {
-			logger.Warningf("miner is already running")
-			return nil, status.Errorf(codes.AlreadyExists, "miner is already running")
+		for _, m := range minerList {
+			if m.Status == v1.MinerStatusIdle || m.Status == v1.MinerStatusBusy {
+				logger.Warningf("miner is already running")
+				return nil, status.Errorf(codes.AlreadyExists, "miner is already running")
+			}
+		}
+	} else {
+		if miner.Address.String != "" {
+			if req.Address != miner.Address.String {
+				return nil, status.Errorf(codes.AlreadyExists, "miner with the specified address is already registered")
+			}
+		} else {
+			minerList, err := s.ds.Miners.ListByAddress(ctx, req.Address)
+			if err != nil {
+				logger.Errorf("failed to list by address: %s", err)
+				return nil, err
+			}
+
+			if len(minerList) > 0 {
+				return nil, status.Errorf(codes.AlreadyExists, "miner with the specified address is already registered")
+			}
 		}
 	}
 
