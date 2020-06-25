@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -96,8 +97,25 @@ func (m *Manager) updateWorkerInfo() {
 				workerReq := &emitterv1.WorkerRequest{Address: miner.Address.String}
 				worker, err := m.emitter.GetWorker(emptyCtx, workerReq)
 				if err != nil {
-					logger.Infof("failed to get worker: %s", err)
-					continue
+					if strings.Contains(err.Error(), "not registered") {
+						emptyWorker := &emitterv1.WorkerResponse{
+							Address:        miner.Address.String,
+							State:          emitterv1.WorkerStateBonding,
+							TotalStake:     "0",
+							SelfStake:      "0",
+							DelegatedStake: "0",
+						}
+						err = m.ds.Miners.UpdateWorkerInfoByAddress(emptyCtx, miner.Address.String, emptyWorker)
+						if err != nil {
+							logger.
+								WithField("address", worker.Address).
+								Errorf("failed to update empty worker info: %s", err)
+						}
+						continue
+					} else {
+						logger.Infof("failed to get worker: %s", err)
+						continue
+					}
 				}
 				err = m.ds.Miners.UpdateWorkerInfoByAddress(emptyCtx, worker.Address, worker)
 				if err != nil {
