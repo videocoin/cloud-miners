@@ -11,7 +11,8 @@ image:
 serviceAccount:
   name: default
 
-config: {}
+config:
+  EMITTER_RPC_ADDR: emitter.console.svc.cluster.local:5003
 
 service:
   ports:
