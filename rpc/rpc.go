@@ -139,21 +139,22 @@ func (s *Server) Ping(ctx context.Context, req *v1.PingRequest) (*v1.PingRespons
 		if err := json.Unmarshal(req.SystemInfo, &sysInfo); err != nil {
 			logger.Errorf("failed to unmarshal system info: %s", err)
 		} else {
+			if ip, ok := sysInfo["ip"].(string); ok {
+				latitude, longitude, err := GetLatLon(ip)
+				if err != nil {
+					logger.WithField("ip", ip).Errorf("failed to get location by ip: %s", err)
+				} else {
+					geoInfo := map[string]interface{}{
+						"latitude":  latitude,
+						"longitude": longitude,
+					}
 
-			latitude, longitude, err := GetLatLon(newIP)
-			if err != nil {
-				logger.WithField("ip", newIP).Errorf("failed to get location by ip: %s", err)
-			} else {
-				geoInfo := map[string]interface{}{
-					"latitude":  latitude,
-					"longitude": longitude,
+					if err := s.ds.Miners.UpdateGeolocation(ctx, miner, geoInfo); err != nil {
+						logger.Errorf("failed to update geolocation: %s", err)
+					}
+
+					sysInfo["geo"] = geoInfo
 				}
-
-				if err := s.ds.Miners.UpdateGeolocation(ctx, miner, geoInfo); err != nil {
-					logger.Errorf("failed to update geolocation: %s", err)
-				}
-
-				sysInfo["geo"] = geoInfo
 			}
 
 			if err := s.ds.Miners.UpdateSystemInfo(ctx, miner, sysInfo); err != nil {
