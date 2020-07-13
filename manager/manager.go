@@ -2,7 +2,8 @@ package manager
 
 import (
 	"context"
-	"strings"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -97,7 +98,8 @@ func (m *Manager) updateWorkerInfo() {
 				workerReq := &emitterv1.WorkerRequest{Address: miner.Address.String}
 				worker, err := m.emitter.GetWorker(emptyCtx, workerReq)
 				if err != nil {
-					if strings.Contains(err.Error(), "not registered") {
+					st, ok := status.FromError(err)
+					if ok && st.Code() == codes.NotFound {
 						emptyWorker := &emitterv1.WorkerResponse{
 							Address:        miner.Address.String,
 							State:          emitterv1.WorkerStateBonding,
@@ -112,10 +114,10 @@ func (m *Manager) updateWorkerInfo() {
 								Errorf("failed to update empty worker info: %s", err)
 						}
 						continue
-					} else {
-						logger.Infof("failed to get worker: %s", err)
-						continue
 					}
+
+					logger.Infof("failed to get worker: %s", err)
+					continue
 				}
 				err = m.ds.Miners.UpdateWorkerInfoByAddress(emptyCtx, worker.Address, worker)
 				if err != nil {
