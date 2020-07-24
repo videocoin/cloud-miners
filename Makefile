@@ -1,6 +1,5 @@
 GOOS?=linux
 GOARCH?=amd64
-ENV?=dev
 
 NAME=miners
 VERSION?=$$(git describe --abbrev=0)-$$(git rev-parse --short HEAD)
@@ -39,4 +38,4 @@ docker-push:
 	docker push ${REGISTRY_SERVER}/${REGISTRY_PROJECT}/${NAME}:${VERSION}
 
 deploy:
-	cd deploy && helm upgrade -i --wait --set image.tag="${VERSION}" -n console miners ./helm
+	helm upgrade -i --wait --set image.tag="${VERSION}" -n console miners ./deploy/helm
