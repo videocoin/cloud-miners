@@ -468,6 +468,30 @@ func (ds *MinerDatastore) UpdateAccessKey(ctx context.Context, miner *Miner, acc
 	return nil
 }
 
+func (ds *MinerDatastore) Update(ctx context.Context, miner *Miner, updates map[string]interface{}) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "Update")
+	defer span.Finish()
+
+	tx := ds.db.Begin()
+
+	err := ds.db.Model(&miner).Updates(updates).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to update miner: %s", err)
+	}
+
+	tx.Commit()
+
+	miner.Name = updates["name"].(string)
+	miner.OrgName = updates["org_name"].(dbr.NullString)
+	miner.OrgEmail = updates["org_email"].(dbr.NullString)
+	miner.OrgDesc = updates["org_desc"].(dbr.NullString)
+	miner.AllowThirdpartyDelegates = updates["allow_thirdparty_delegates"].(bool)
+	miner.DelegatePolicy = updates["delegate_policy"].(dbr.NullString)
+
+	return nil
+}
+
 func (ds *MinerDatastore) MarkAllAsOffline(ctx context.Context) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "MarkAllAsOffline")
 	defer span.Finish()

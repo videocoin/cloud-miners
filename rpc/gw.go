@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"github.com/mailru/dbr"
 
 	"github.com/AlekSi/pointer"
 	protoempty "github.com/gogo/protobuf/types"
@@ -105,7 +106,16 @@ func (s *Server) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1.Mi
 		return nil, err
 	}
 
-	if err := s.ds.Miners.UpdateName(ctx, miner, req.Name); err != nil {
+	updates := map[string]interface{}{
+		"name": req.Name,
+		"org_name": dbr.NewNullString(req.OrgName),
+		"org_email": dbr.NewNullString(req.OrgEmail),
+		"org_desc": dbr.NewNullString(req.OrgDesc),
+		"allow_thirdparty_delegates": req.AllowThirdpartyDelegates,
+		"delegate_policy": dbr.NewNullString(req.DelegatePolicy),
+	}
+
+	if err := s.ds.Miners.Update(ctx, miner, updates); err != nil {
 		return nil, err
 	}
 
