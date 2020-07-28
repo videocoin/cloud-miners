@@ -82,6 +82,11 @@ func (s *Server) Update(ctx context.Context, req *v1.UpdateMinerRequest) (*v1.Mi
 	span := opentracing.SpanFromContext(ctx)
 	span.SetTag("id", req.Id)
 	span.SetTag("name", req.Name)
+	span.SetTag("org_name", req.OrgName)
+	span.SetTag("org_email", req.OrgEmail)
+	span.SetTag("org_desc", req.OrgDesc)
+	span.SetTag("allow_delegates", req.AllowThirdpartyDelegates)
+	span.SetTag("delegate_policy", req.DelegatePolicy)
 
 	userID, err := s.authenticate(ctx)
 	if err != nil {

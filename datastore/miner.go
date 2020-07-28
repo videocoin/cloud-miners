@@ -50,25 +50,30 @@ func (info *Info) Scan(src interface{}) error {
 }
 
 type Miner struct {
-	ID            string
-	UserID        string
-	Name          string
-	AccessKey     string
-	Status        v1.MinerStatus
-	LastPingAt    *time.Time
-	CurrentTaskID dbr.NullString
-	Address       dbr.NullString
-	DeletedAt     *time.Time
-	Tags          Tags                      `sql:"type:json"`
-	SystemInfo    Info                      `sql:"type:json"`
-	CapacityInfo  Info                      `sql:"type:json"`
-	WorkerInfo    *emitterv1.WorkerResponse `sql:"type:json"`
-	Key           dbr.NullString
-	Secret        dbr.NullString
-	IsInternal    bool
-	IsLock        bool
-	Reward        float64
-	IsBlock       bool
+	ID                       string
+	UserID                   string
+	Name                     string
+	AccessKey                string
+	Status                   v1.MinerStatus
+	LastPingAt               *time.Time
+	CurrentTaskID            dbr.NullString
+	Address                  dbr.NullString
+	DeletedAt                *time.Time
+	Tags                     Tags                      `sql:"type:json"`
+	SystemInfo               Info                      `sql:"type:json"`
+	CapacityInfo             Info                      `sql:"type:json"`
+	WorkerInfo               *emitterv1.WorkerResponse `sql:"type:json"`
+	Key                      dbr.NullString
+	Secret                   dbr.NullString
+	IsInternal               bool
+	IsLock                   bool
+	Reward                   float64
+	IsBlock                  bool
+	OrgName                  dbr.NullString
+	OrgEmail                 dbr.NullString
+	OrgDesc                  dbr.NullString
+	AllowThirdpartyDelegates bool
+	DelegatePolicy           dbr.NullString
 }
 
 func (m *Miner) IsOnline() bool {
