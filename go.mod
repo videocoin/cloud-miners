@@ -2,10 +2,6 @@ module github.com/videocoin/cloud-miners
 
 go 1.14
 
-replace github.com/videocoin/cloud-api => ../cloud-api
-
-replace github.com/videocoin/cloud-pkg => ../cloud-pkg
-
 require (
 	github.com/AlekSi/pointer v1.1.0
 	github.com/gogo/protobuf v1.3.1
@@ -21,8 +17,8 @@ require (
 	github.com/oschwald/geoip2-golang v1.4.0
 	github.com/prometheus/client_golang v1.6.0
 	github.com/sirupsen/logrus v1.6.0
-	github.com/videocoin/cloud-api v0.0.17
-	github.com/videocoin/cloud-pkg v0.0.5
+	github.com/videocoin/cloud-api v1.1.2
+	github.com/videocoin/cloud-pkg v1.0.0
 	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f
 	google.golang.org/grpc v1.29.1
 )

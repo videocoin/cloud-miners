@@ -193,3 +193,18 @@ func (s *Server) All(ctx context.Context, req *protoempty.Empty) (*v1.MinerListR
 
 	return resp, nil
 }
+
+func (s *Server) GetMiner(ctx context.Context, req *v1.MinerRequest) (*v1.MinerResponse, error) {
+	span := opentracing.SpanFromContext(ctx)
+	span.SetTag("id", req.Id)
+
+	miner, err := s.ds.Miners.Get(ctx, req.Id, "")
+	if err != nil {
+		if err == datastore.ErrMinerNotFound {
+			return nil, rpc.ErrRpcNotFound
+		}
+		return nil, err
+	}
+
+	return toMinerResponse(miner), nil
+}

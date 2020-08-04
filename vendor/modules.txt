@@ -150,14 +150,14 @@ github.com/uber/jaeger-lib/metrics
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
 github.com/valyala/fasttemplate
-# github.com/videocoin/cloud-api v0.0.17 => ../cloud-api
+# github.com/videocoin/cloud-api v1.1.2
 ## explicit
 github.com/videocoin/cloud-api/accounts/v1
 github.com/videocoin/cloud-api/emitter/v1
 github.com/videocoin/cloud-api/miners/v1
 github.com/videocoin/cloud-api/rpc
 github.com/videocoin/cloud-api/users/v1
-# github.com/videocoin/cloud-pkg v0.0.5 => ../cloud-pkg
+# github.com/videocoin/cloud-pkg v1.0.0
 ## explicit
 github.com/videocoin/cloud-pkg/auth
 github.com/videocoin/cloud-pkg/ethutils
@@ -277,5 +277,3 @@ google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/structpb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/wrapperspb
-# github.com/videocoin/cloud-api => ../cloud-api
-# github.com/videocoin/cloud-pkg => ../cloud-pkg

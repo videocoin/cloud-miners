@@ -79,6 +79,12 @@ service MinersService {
         };
     }
 
+    rpc GetMiner(MinerRequest) returns (MinerResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/miners/all/{id}"
+        };
+    }
+
     rpc Get(MinerRequest) returns (MinerResponse) {
         option (google.api.http) = {
             get: "/api/v1/miners/{id}"
