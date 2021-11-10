@@ -41,6 +41,8 @@ github.com/Joker/hpp v0.0.0-20180418125244-6893e659854a/go.mod h1:MzD2WMdSxvbHw5
 github.com/Joker/jade v1.0.0/go.mod h1:efZIdO0py/LtcJRSa/j2WEklMSAw84WV0zZVMxNToB8=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/OneOfOne/xxhash v1.2.5/go.mod h1:eZbhyaAYD41SGSSsnmcpxVoRiQ/MPUTjUdIIOT9Um7Q=
+github.com/OrlovEvgeny/go-mcache v0.0.0-20200121124330-1a8195b34f3a h1:Cf4CrDeyrIcuIiJZEZJAH5dapqQ6J3OmP/vHPbDjaFA=
+github.com/OrlovEvgeny/go-mcache v0.0.0-20200121124330-1a8195b34f3a/go.mod h1:ig6eVXkYn/9dz0Vm8UdLf+E0u1bE6kBSn3n2hqk6jas=
 github.com/Pallinder/sillyname-go v0.0.0-20130730142914-97aeae9e6ba1 h1:ReSY7H5Nf08bSzShfWAUTCthIsK08iNitWGX5YFQGXE=
 github.com/Pallinder/sillyname-go v0.0.0-20130730142914-97aeae9e6ba1/go.mod h1:cTmXjiBQMtbZnpc/yLode6SPqKmzeL7xJlD+9R9zxoc=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398/go.mod h1:a1uqRtAwp2Xwc6WNPJEufxJ7fx3npB4UV/JOLmbu5I0=

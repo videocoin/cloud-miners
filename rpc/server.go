@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/health"
 	healthv1 "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"github.com/OrlovEvgeny/go-mcache"
 )
 
 type ServerOption struct {
@@ -30,6 +31,7 @@ type Server struct {
 	listen          net.Listener
 	ds              *datastore.Datastore
 	iam             *iam.Client
+	mc              *mcache.CacheDriver
 }
 
 func NewServer(opts *ServerOption, ds *datastore.Datastore) (*Server, error) {
@@ -44,6 +46,8 @@ func NewServer(opts *ServerOption, ds *datastore.Datastore) (*Server, error) {
 		return nil, err
 	}
 
+	mc := mcache.New()
+
 	rpcServer := &Server{
 		logger:          opts.Logger,
 		addr:            opts.Addr,
@@ -52,6 +56,7 @@ func NewServer(opts *ServerOption, ds *datastore.Datastore) (*Server, error) {
 		grpc:            grpcServer,
 		listen:          listen,
 		ds:              ds,
+		mc:              mc,
 	}
 
 	v1.RegisterMinersServiceServer(grpcServer, rpcServer)

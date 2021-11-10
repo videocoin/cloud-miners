@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/AlekSi/pointer v1.1.0
+	github.com/OrlovEvgeny/go-mcache v0.0.0-20200121124330-1a8195b34f3a
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e

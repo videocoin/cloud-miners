@@ -3,13 +3,13 @@ package rpc
 import (
 	"context"
 	"github.com/mailru/dbr"
-
 	"github.com/AlekSi/pointer"
 	protoempty "github.com/gogo/protobuf/types"
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
 	"github.com/videocoin/cloud-miners/datastore"
+	"time"
 )
 
 func (s *Server) Create(ctx context.Context, req *v1.CreateMinerRequest) (*v1.MinerResponse, error) {
@@ -182,13 +182,19 @@ func (s *Server) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.Miner
 func (s *Server) All(ctx context.Context, req *protoempty.Empty) (*v1.MinerListResponse, error) {
 	resp := &v1.MinerListResponse{Items: []*v1.MinerResponse{}}
 
-	miners, err := s.ds.Miners.List(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
+	minersResp, ok := s.mc.Get("all-miners")
+	if !ok {
+		miners, err := s.ds.Miners.List(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
 
-	for _, miner := range miners {
-		resp.Items = append(resp.Items, toMinerResponse(miner))
+		for _, miner := range miners {
+			resp.Items = append(resp.Items, toMinerResponse(miner))
+		}
+		s.mc.Set("all-miners", resp, time.Minute * 60)
+	} else {
+		resp = minersResp.(*v1.MinerListResponse)
 	}
 
 	return resp, nil
