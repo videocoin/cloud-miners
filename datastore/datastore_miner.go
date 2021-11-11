@@ -127,15 +127,23 @@ func (ds *MinerDatastore) ListByAddress(ctx context.Context, address string) ([]
 	return miners, nil
 }
 
-func (ds *MinerDatastore) List(ctx context.Context, userID *string) ([]*Miner, error) {
+func (ds *MinerDatastore) List(ctx context.Context, fltr *ListFilter) ([]*Miner, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "List")
 	defer span.Finish()
 
 	miners := []*Miner{}
 
 	qs := ds.db
-	if userID != nil {
-		qs = qs.Where("user_id = ?", &userID)
+	if fltr != nil {
+		if fltr.Limit != nil {
+			qs = qs.Limit(*fltr.Limit)
+		}
+		if fltr.Offset != nil {
+			qs = qs.Offset(*fltr.Offset)
+		}
+		if fltr.UserID != nil {
+			qs = qs.Where("user_id = ?", *fltr.UserID)
+		}
 	}
 	qs = qs.Find(&miners)
 
@@ -144,6 +152,27 @@ func (ds *MinerDatastore) List(ctx context.Context, userID *string) ([]*Miner, e
 	}
 
 	return miners, nil
+}
+
+func (ds *MinerDatastore) Count(ctx context.Context, fltr *ListFilter) (int, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "List")
+	defer span.Finish()
+
+	count := 0
+
+	qs := ds.db.Model(Miner{})
+	if fltr != nil {
+		if fltr.UserID != nil {
+			qs = qs.Where("user_id = ?", *fltr.UserID)
+		}
+	}
+	qs = qs.Count(&count)
+
+	if err := qs.Error; err != nil {
+		return 0, fmt.Errorf("failed to get miners list: %s", err)
+	}
+
+	return count, nil
 }
 
 func (ds *MinerDatastore) ListByInternal(ctx context.Context) ([]*Miner, error) {

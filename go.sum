@@ -555,6 +555,8 @@ github.com/valyala/fasttemplate v1.0.1/go.mod h1:UQGH1tvbgY+Nz5t2n7tXsz52dQxojPU
 github.com/videocoin/cloud-api v0.0.17/go.mod h1:6HhpNaw1C8VsYtRpaF2gNZCKJmZjWjeQwXHn4lvm1QQ=
 github.com/videocoin/cloud-api v1.1.2 h1:3y9AV5cIFbLvRBrF5Z/StR+E6nT/3lUO4Y0yvsC1RiU=
 github.com/videocoin/cloud-api v1.1.2/go.mod h1:jnRiyPFJqrvbyUuw8SPJ8nI4oftrxhtYCOGoop6iatg=
+github.com/videocoin/cloud-api v1.1.4 h1:i7Uqgt6qyFMaoz4M8Tek+DhWh7d73zL0yGlsrzMdiMk=
+github.com/videocoin/cloud-api v1.1.4/go.mod h1:jnRiyPFJqrvbyUuw8SPJ8nI4oftrxhtYCOGoop6iatg=
 github.com/videocoin/cloud-dispatcher v0.1.3/go.mod h1:THslIhWs8RdQZxjXr7rGGzSKIn6sBxzcO5MuAJUGyVc=
 github.com/videocoin/cloud-pipelines v0.4.5/go.mod h1:C3WdD8OEO2DZfxmRTyztbElQGb+kfPVfSRPblwcGRg0=
 github.com/videocoin/cloud-pkg v1.0.0 h1:qTWfRcX+QxXPX9+LN0Btd5ZHPAKUtpfZC61vOZdjv+M=

@@ -5,7 +5,6 @@ import (
 	"github.com/mailru/dbr"
 
 	"github.com/AlekSi/pointer"
-	protoempty "github.com/gogo/protobuf/types"
 	"github.com/opentracing/opentracing-go"
 	v1 "github.com/videocoin/cloud-api/miners/v1"
 	"github.com/videocoin/cloud-api/rpc"
@@ -47,7 +46,10 @@ func (s *Server) List(ctx context.Context, req *v1.MinerRequest) (*v1.MinerListR
 
 	resp := &v1.MinerListResponse{Items: []*v1.MinerResponse{}}
 
-	miners, err := s.ds.Miners.List(ctx, pointer.ToString(userID))
+	fltr := &datastore.ListFilter{
+		UserID: pointer.ToString(userID),
+	}
+	miners, err := s.ds.Miners.List(ctx, fltr)
 	if err != nil {
 		return nil, err
 	}
@@ -179,10 +181,29 @@ func (s *Server) SetTags(ctx context.Context, req *v1.SetTagsRequest) (*v1.Miner
 	return toMinerResponse(miner), nil
 }
 
-func (s *Server) All(ctx context.Context, req *protoempty.Empty) (*v1.MinerListResponse, error) {
+func (s *Server) All(ctx context.Context, req *v1.AllMinersListRequest) (*v1.MinerListResponse, error) {
 	resp := &v1.MinerListResponse{Items: []*v1.MinerResponse{}}
 
-	miners, err := s.ds.Miners.List(ctx, nil)
+	fltr := &datastore.ListFilter{}
+
+	if req.Limit != 0 {
+		fltr.Limit = pointer.ToInt(int(req.Limit))
+		fltr.Offset = pointer.ToInt(0)
+	}
+
+	if req.Offset != 0 {
+		fltr.Offset = pointer.ToInt(int(req.Offset))
+		if fltr.Limit == nil {
+			fltr.Limit = pointer.ToInt(20)
+		}
+	}
+
+	miners, err := s.ds.Miners.List(ctx, fltr)
+	if err != nil {
+		return nil, err
+	}
+
+	minersCount, err := s.ds.Miners.Count(ctx, fltr)
 	if err != nil {
 		return nil, err
 	}
@@ -190,6 +211,11 @@ func (s *Server) All(ctx context.Context, req *protoempty.Empty) (*v1.MinerListR
 	for _, miner := range miners {
 		resp.Items = append(resp.Items, toMinerResponse(miner))
 	}
+
+	resp.TotalCount = int32(minersCount)
+	resp.Count = int32(len(miners))
+	resp.HasPrev = resp.Count > 0 && req.Offset > 0
+	resp.HasNext = resp.Count > 0 && resp.TotalCount > (resp.Count+req.Offset)
 
 	return resp, nil
 }

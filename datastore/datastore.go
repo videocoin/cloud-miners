@@ -28,3 +28,9 @@ func NewDatastore(uri string) (*Datastore, error) {
 
 	return ds, nil
 }
+
+type ListFilter struct {
+	UserID *string
+	Limit  *int
+	Offset *int
+}
